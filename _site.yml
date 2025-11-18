@@ -3,12 +3,13 @@ output_dir: "."
 navbar:
   title: "Home"
   right:
-    - text: "Shiny"
-      href: 
-    - text: "Dashboard"
-      href: diabetes.html
-    - text: "Something"
+    - text: "Index"
       href: index.html
+    - text: "Proposal"
+      href: proposal.html      
+    - text: "EDA"
+      href: diabetes.html
+
     - icon: fa-envelope fa-lg
       href: 
     - icon: fa-github fa-lg

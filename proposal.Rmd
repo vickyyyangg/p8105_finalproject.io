@@ -1,7 +1,8 @@
 ---
 title: "Proposal"
-output: github_document
+output: html_document
 ---
+
 **Group members (names and UNIs):**  
 - Yvonne Xie yx3033  
 - Rosie Kwon rk3445  
