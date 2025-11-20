@@ -1,0 +1,161 @@
+---
+title: "Exploratory data analyses"
+output: html_document
+---
+
+```{r, include = FALSE, message = FALSE, warning = FALSE}
+# Load required libraries
+library(tidyverse)
+library(rvest)
+library(plotly)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+
+
+```{r}
+#Load & Clean Dataset
+diabetes = 
+  read_csv("Diabete datasets/diabetes_012_health_indicators_BRFSS2015.csv") |>
+  janitor::clean_names() |> 
+  mutate(
+    sex = case_match(
+      sex,
+      0 ~ "Female",
+      1 ~ "Male"
+    ),
+    sex = factor(sex),
+    age = case_match(
+      as.numeric(age),
+      1 ~ "18-24",
+      2 ~ "25–29",
+      3 ~ "30–34",
+      4 ~ "35–39",
+      5 ~ "40–44",
+      6 ~ "45-49",
+      7 ~ "50-54",
+      8 ~ "55-59",
+      9 ~ "60-64",
+      10 ~ "65-69",
+      11 ~ "70-74",
+      12 ~ "75-79",
+      13 ~ "80+"
+    ),
+    age = 
+      factor(age, 
+             levels = 
+               c("18-24","25–29", "30–34", "35–39",
+                 "40–44","45-49","50-54","55-59",
+                 "60-64","65-69","70-74","75-79","80+"), 
+             ordered = TRUE),
+    education = case_match(
+      as.numeric(education),
+      1 ~ "Never attended school",
+      2 ~ "Grade 1-8",
+      3 ~ "Grade 9-11",
+      4 ~ "High school graduate",
+      5 ~ "College 1-3",
+      6 ~ "College graduate"
+     ),
+    education = 
+      factor(education, 
+             levels = 
+               c("Never attended school","Grade 1-8", "Grade 9-11",
+                 "High school graduate","College 1-3",
+                 "College graduate"), 
+             ordered = TRUE),
+    income = case_match(
+      as.numeric(income),
+      1 ~ "Less than $10,000",
+      2 ~ "$10,000 - $15,000",
+      3 ~ "$15,000 - $20,000",
+      4 ~ "$20,000 - $25,000",
+      5 ~ "$25,000 - $35,000",
+      6 ~ "$35,000 - $50,000",
+      7 ~ "$50,000 - $75,000",
+      8 ~ "$75,000 +"
+    ),
+    income = 
+      factor(income, 
+             levels = 
+               c("Less than $10,000","$10,000 - $15,000",
+                 "$15,000 - $20,000","$20,000 - $25,000",
+                 "$25,000 - $35,000","$35,000 - $50,000",
+                 "$50,000 - $75,000","$75,000 +"), 
+             ordered = TRUE),
+    gen_hlth = case_match(
+      as.numeric(gen_hlth),
+      1 ~ "Poor",
+      2 ~ "Fair",
+      3 ~ "Good",
+      4 ~ "Very Good",
+      5 ~ "Excellent"
+    ),
+    gen_hlth = 
+      factor(gen_hlth, 
+             levels = 
+               c("Poor", "Fair", "Good", "Very Good", "Excellent"), 
+             ordered = TRUE),
+    diabetes_012 = 
+      factor(diabetes_012,
+             levels = c(0,1,2),
+             labels = c("No Diabetes", "Prediabetes", "Diabetes"))
+  )
+  
+binary_vars = c(
+  "high_bp", "high_chol", "chol_check",
+  "smoker", "stroke", "heart_diseaseor_attack",
+  "phys_activity", "hvy_alcohol_consump", "any_healthcare",
+  "no_docbc_cost", "diff_walk", "fruits", "veggies"
+)
+
+diabetes[binary_vars] = lapply(
+  diabetes[binary_vars],
+  function(x) factor(ifelse(x == 1, "Yes", "No"))
+)
+
+```
+
+
+Data have `r nrow(diabetes)` records and `r ncol(diabetes)` variables. Each record contains an individual's BRFSS survey responses.
+
+```{r}
+#data summary
+library(skimr)
+skim(diabetes)
+```
+
+
+```{r}
+diabetes |> 
+  ggplot(aes(x = bmi, fill = diabetes_012, group = diabetes_012)) +
+  geom_histogram(aes(y = ..density..), bins = 40, alpha = 0.6, color = "white") +
+  geom_density(alpha = 0.3) +
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "BMI Distribution by Diabetes Status",
+    x = "BMI",
+    y = "Density",
+    fill = "Diabetes Status"
+  )
+
+```
+
+

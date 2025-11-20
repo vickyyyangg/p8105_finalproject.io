@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Exploratory data analyses</title>
+
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/united.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Home</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="proposal.html">Proposal</a>
+</li>
+<li>
+  <a href="report.html">Report</a>
+</li>
+<li>
+  <a href="introduction.html">Introduction</a>
+</li>
+<li>
+  <a href="EDA.html">EDA</a>
+</li>
+<li>
+  <a>
+    <span class="fa fa-envelope fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a>
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Exploratory data analyses</h1>
+
+</div>
+
+
+<pre class="r"><code>#Load &amp; Clean Dataset
+diabetes = 
+  read_csv(&quot;Diabete datasets/diabetes_012_health_indicators_BRFSS2015.csv&quot;) |&gt;
+  janitor::clean_names() |&gt; 
+  mutate(
+    sex = case_match(
+      sex,
+      0 ~ &quot;Female&quot;,
+      1 ~ &quot;Male&quot;
+    ),
+    sex = factor(sex),
+    age = case_match(
+      as.numeric(age),
+      1 ~ &quot;18-24&quot;,
+      2 ~ &quot;25–29&quot;,
+      3 ~ &quot;30–34&quot;,
+      4 ~ &quot;35–39&quot;,
+      5 ~ &quot;40–44&quot;,
+      6 ~ &quot;45-49&quot;,
+      7 ~ &quot;50-54&quot;,
+      8 ~ &quot;55-59&quot;,
+      9 ~ &quot;60-64&quot;,
+      10 ~ &quot;65-69&quot;,
+      11 ~ &quot;70-74&quot;,
+      12 ~ &quot;75-79&quot;,
+      13 ~ &quot;80+&quot;
+    ),
+    age = 
+      factor(age, 
+             levels = 
+               c(&quot;18-24&quot;,&quot;25–29&quot;, &quot;30–34&quot;, &quot;35–39&quot;,
+                 &quot;40–44&quot;,&quot;45-49&quot;,&quot;50-54&quot;,&quot;55-59&quot;,
+                 &quot;60-64&quot;,&quot;65-69&quot;,&quot;70-74&quot;,&quot;75-79&quot;,&quot;80+&quot;), 
+             ordered = TRUE),
+    education = case_match(
+      as.numeric(education),
+      1 ~ &quot;Never attended school&quot;,
+      2 ~ &quot;Grade 1-8&quot;,
+      3 ~ &quot;Grade 9-11&quot;,
+      4 ~ &quot;High school graduate&quot;,
+      5 ~ &quot;College 1-3&quot;,
+      6 ~ &quot;College graduate&quot;
+     ),
+    education = 
+      factor(education, 
+             levels = 
+               c(&quot;Never attended school&quot;,&quot;Grade 1-8&quot;, &quot;Grade 9-11&quot;,
+                 &quot;High school graduate&quot;,&quot;College 1-3&quot;,
+                 &quot;College graduate&quot;), 
+             ordered = TRUE),
+    income = case_match(
+      as.numeric(income),
+      1 ~ &quot;Less than $10,000&quot;,
+      2 ~ &quot;$10,000 - $15,000&quot;,
+      3 ~ &quot;$15,000 - $20,000&quot;,
+      4 ~ &quot;$20,000 - $25,000&quot;,
+      5 ~ &quot;$25,000 - $35,000&quot;,
+      6 ~ &quot;$35,000 - $50,000&quot;,
+      7 ~ &quot;$50,000 - $75,000&quot;,
+      8 ~ &quot;$75,000 +&quot;
+    ),
+    income = 
+      factor(income, 
+             levels = 
+               c(&quot;Less than $10,000&quot;,&quot;$10,000 - $15,000&quot;,
+                 &quot;$15,000 - $20,000&quot;,&quot;$20,000 - $25,000&quot;,
+                 &quot;$25,000 - $35,000&quot;,&quot;$35,000 - $50,000&quot;,
+                 &quot;$50,000 - $75,000&quot;,&quot;$75,000 +&quot;), 
+             ordered = TRUE),
+    gen_hlth = case_match(
+      as.numeric(gen_hlth),
+      1 ~ &quot;Poor&quot;,
+      2 ~ &quot;Fair&quot;,
+      3 ~ &quot;Good&quot;,
+      4 ~ &quot;Very Good&quot;,
+      5 ~ &quot;Excellent&quot;
+    ),
+    gen_hlth = 
+      factor(gen_hlth, 
+             levels = 
+               c(&quot;Poor&quot;, &quot;Fair&quot;, &quot;Good&quot;, &quot;Very Good&quot;, &quot;Excellent&quot;), 
+             ordered = TRUE),
+    diabetes_012 = 
+      factor(diabetes_012,
+             levels = c(0,1,2),
+             labels = c(&quot;No Diabetes&quot;, &quot;Prediabetes&quot;, &quot;Diabetes&quot;))
+  )</code></pre>
+<pre><code>## Rows: 253680 Columns: 22
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## dbl (22): Diabetes_012, HighBP, HighChol, CholCheck, BMI, Smoker, Stroke, He...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>binary_vars &lt;- c(
+  &quot;high_bp&quot;, &quot;high_chol&quot;, &quot;chol_check&quot;,
+  &quot;smoker&quot;, &quot;stroke&quot;, &quot;heart_diseaseor_attack&quot;,
+  &quot;phys_activity&quot;, &quot;hvy_alcohol_consump&quot;, &quot;any_healthcare&quot;,
+  &quot;no_docbc_cost&quot;, &quot;diff_walk&quot;, &quot;fruits&quot;, &quot;veggies&quot;
+)
+
+diabetes[binary_vars] &lt;- lapply(
+  diabetes[binary_vars],
+  function(x) factor(ifelse(x == 1, &quot;Yes&quot;, &quot;No&quot;))
+)</code></pre>
+<p>Data have 253680 records and 22 variables. Each record contains an
+individual’s BRFSS survey responses.</p>
+<pre class="r"><code>#data summary
+library(skimr)
+skim(diabetes)</code></pre>
+<table>
+<caption>Data summary</caption>
+<tbody>
+<tr class="odd">
+<td align="left">Name</td>
+<td align="left">diabetes</td>
+</tr>
+<tr class="even">
+<td align="left">Number of rows</td>
+<td align="left">253680</td>
+</tr>
+<tr class="odd">
+<td align="left">Number of columns</td>
+<td align="left">22</td>
+</tr>
+<tr class="even">
+<td align="left">_______________________</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Column type frequency:</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left">factor</td>
+<td align="left">19</td>
+</tr>
+<tr class="odd">
+<td align="left">numeric</td>
+<td align="left">3</td>
+</tr>
+<tr class="even">
+<td align="left">________________________</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Group variables</td>
+<td align="left">None</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: factor</strong></p>
+<table style="width:100%;">
+<colgroup>
+<col width="20%" />
+<col width="9%" />
+<col width="12%" />
+<col width="7%" />
+<col width="8%" />
+<col width="42%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">skim_variable</th>
+<th align="right">n_missing</th>
+<th align="right">complete_rate</th>
+<th align="left">ordered</th>
+<th align="right">n_unique</th>
+<th align="left">top_counts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">diabetes_012</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">FALSE</td>
+<td align="right">3</td>
+<td align="left">No : 213703, Dia: 35346, Pre: 4631</td>
+</tr>
+<tr class="even">
+<td align="left">high_bp</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">FALSE</td>
+<td align="right">2</td>
+<td align="left">No: 144851, Yes: 108829</td>
+</tr>
+<tr class="odd">
+<td align="left">high_chol</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">FALSE</td>
+<td align="right">2</td>
+<td align="left">No: 146089, Yes: 107591</td>
+</tr>
+<tr class="even">
+<td align="left">chol_check</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">FALSE</td>
+<td align="right">2</td>
+<td align="left">Yes: 244210, No: 9470</td>
+</tr>
+<tr class="odd">
+<td align="left">smoker</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">FALSE</td>
+<td align="right">2</td>
+<td align="left">No: 141257, Yes: 112423</td>
+</tr>
+<tr class="even">
+<td align="left">stroke</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">FALSE</td>
+<td align="right">2</td>
+<td align="left">No: 243388, Yes: 10292</td>
+</tr>
+<tr class="odd">
+<td align="left">heart_diseaseor_attack</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">FALSE</td>
+<td align="right">2</td>
+<td align="left">No: 229787, Yes: 23893</td>
+</tr>
+<tr class="even">
+<td align="left">phys_activity</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">FALSE</td>
+<td align="right">2</td>
+<td align="left">Yes: 191920, No: 61760</td>
+</tr>
+<tr class="odd">
+<td align="left">fruits</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">FALSE</td>
+<td align="right">2</td>
+<td align="left">Yes: 160898, No: 92782</td>
+</tr>
+<tr class="even">
+<td align="left">veggies</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">FALSE</td>
+<td align="right">2</td>
+<td align="left">Yes: 205841, No: 47839</td>
+</tr>
+<tr class="odd">
+<td align="left">hvy_alcohol_consump</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">FALSE</td>
+<td align="right">2</td>
+<td align="left">No: 239424, Yes: 14256</td>
+</tr>
+<tr class="even">
+<td align="left">any_healthcare</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">FALSE</td>
+<td align="right">2</td>
+<td align="left">Yes: 241263, No: 12417</td>
+</tr>
+<tr class="odd">
+<td align="left">no_docbc_cost</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">FALSE</td>
+<td align="right">2</td>
+<td align="left">No: 232326, Yes: 21354</td>
+</tr>
+<tr class="even">
+<td align="left">gen_hlth</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="right">5</td>
+<td align="left">Fai: 89084, Goo: 75646, Poo: 45299, Ver: 31570</td>
+</tr>
+<tr class="odd">
+<td align="left">diff_walk</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">FALSE</td>
+<td align="right">2</td>
+<td align="left">No: 211005, Yes: 42675</td>
+</tr>
+<tr class="even">
+<td align="left">sex</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">FALSE</td>
+<td align="right">2</td>
+<td align="left">Fem: 141974, Mal: 111706</td>
+</tr>
+<tr class="odd">
+<td align="left">age</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="right">13</td>
+<td align="left">60-: 33244, 65-: 32194, 55-: 30832, 50-: 26314</td>
+</tr>
+<tr class="even">
+<td align="left">education</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="right">6</td>
+<td align="left">Col: 107325, Col: 69910, Hig: 62750, Gra: 9478</td>
+</tr>
+<tr class="odd">
+<td align="left">income</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="right">8</td>
+<td align="left">$75: 90385, $50: 43219, $35: 36470, $25: 25883</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: numeric</strong></p>
+<table>
+<colgroup>
+<col width="18%" />
+<col width="13%" />
+<col width="18%" />
+<col width="8%" />
+<col width="6%" />
+<col width="4%" />
+<col width="5%" />
+<col width="5%" />
+<col width="5%" />
+<col width="6%" />
+<col width="8%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">skim_variable</th>
+<th align="right">n_missing</th>
+<th align="right">complete_rate</th>
+<th align="right">mean</th>
+<th align="right">sd</th>
+<th align="right">p0</th>
+<th align="right">p25</th>
+<th align="right">p50</th>
+<th align="right">p75</th>
+<th align="right">p100</th>
+<th align="left">hist</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">bmi</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">28.38</td>
+<td align="right">6.61</td>
+<td align="right">12</td>
+<td align="right">24</td>
+<td align="right">27</td>
+<td align="right">31</td>
+<td align="right">98</td>
+<td align="left">▇▅▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">ment_hlth</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">3.18</td>
+<td align="right">7.41</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">2</td>
+<td align="right">30</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">phys_hlth</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">4.24</td>
+<td align="right">8.72</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">30</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>diabetes |&gt; 
+  ggplot(aes(x = bmi, fill = diabetes_012, group = diabetes_012)) +
+  geom_histogram(aes(y = ..density..), bins = 40, alpha = 0.6, color = &quot;white&quot;) +
+  geom_density(alpha = 0.3) +
+  theme_minimal(base_size = 14) +
+  labs(
+    title = &quot;BMI Distribution by Diabetes Status&quot;,
+    x = &quot;BMI&quot;,
+    y = &quot;Density&quot;,
+    fill = &quot;Diabetes Status&quot;
+  )</code></pre>
+<p><img src="EDA_files/figure-html/unnamed-chunk-4-1.png" width="90%" /></p>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
