@@ -3,12 +3,8 @@ title: "Exploring Diabetes Risk Factors"
 output:
   html_document:
     self_contained: false
-    theme: null
+    theme: cosmo
     toc: false
-    includes:
-      in_header: template/header.html
-      before_body: template/body_start.html
-      after_body: template/body_end.html
 ---
 
 ---
@@ -191,21 +187,40 @@ diabetes |>
   )
 ```
 
+```{r}
+diabetes |>
+  group_by(age, sex) |> 
+  summarise(diabetes_rate = mean(diabetes_012 == "Diabetes")) |>  
+  plot_ly(
+    x = ~age,
+    y = ~diabetes_rate,
+    color = ~sex,
+    colors = c("tomato","skyblue"),
+    type = "scatter",
+    mode = "lines+markers"
+  ) |>  
+  layout(
+    title = "Diabetes Prevalence by Sex and Age Group",
+    xaxis = list(title = "Age Group"),
+    yaxis = list(title = "Diabetes Rate")
+  )
+```
 
 
-
+BMI Distribution
 
 ```{r}
-diabetes |> 
-  ggplot(aes(x = bmi, fill = diabetes_012, group = diabetes_012)) +
-  geom_histogram(aes(y = ..density..), bins = 40, alpha = 0.6, color = "white") +
-  geom_density(alpha = 0.3) +
-  theme_minimal(base_size = 14) +
-  labs(
+plot_ly(
+  data = diabetes,
+  x = ~diabetes_012,
+  y = ~bmi,
+  color = ~diabetes_012,
+  type = "box"
+  ) |> 
+  layout(
     title = "BMI Distribution by Diabetes Status",
-    x = "BMI",
-    y = "Density",
-    fill = "Diabetes Status"
+    xaxis = list(title = "Diabetes Status"),
+    yaxis = list(title = "BMI")
   )
 ```
 
