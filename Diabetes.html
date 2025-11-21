@@ -288,30 +288,24 @@ diabetes =
   read_csv(&quot;Diabete datasets/diabetes_012_health_indicators_BRFSS2015.csv&quot;) |&gt;
   janitor::clean_names() </code></pre>
 <pre><code>## Rows: 253680 Columns: 22
-## ── Column specification ───────────────────────────────
+## ── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
-## dbl (22): Diabetes_012, HighBP, HighChol, CholCheck, BMI, Smoker, Stroke, He...
+## dbl (22): Diabetes_012, HighBP, HighChol, CholCheck, BMI, Smoker, Stroke, HeartDiseaseorAttack, PhysActivity, Fruits, ...
 ## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <pre class="r"><code># Check for missing values
 colSums(is.na(diabetes))</code></pre>
-<pre><code>##           diabetes_012                high_bp              high_chol 
-##                      0                      0                      0 
-##             chol_check                    bmi                 smoker 
-##                      0                      0                      0 
-##                 stroke heart_diseaseor_attack          phys_activity 
-##                      0                      0                      0 
-##                 fruits                veggies    hvy_alcohol_consump 
-##                      0                      0                      0 
-##         any_healthcare          no_docbc_cost               gen_hlth 
-##                      0                      0                      0 
-##              ment_hlth              phys_hlth              diff_walk 
-##                      0                      0                      0 
-##                    sex                    age              education 
-##                      0                      0                      0 
-##                 income 
-##                      0</code></pre>
+<pre><code>##           diabetes_012                high_bp              high_chol             chol_check                    bmi 
+##                      0                      0                      0                      0                      0 
+##                 smoker                 stroke heart_diseaseor_attack          phys_activity                 fruits 
+##                      0                      0                      0                      0                      0 
+##                veggies    hvy_alcohol_consump         any_healthcare          no_docbc_cost               gen_hlth 
+##                      0                      0                      0                      0                      0 
+##              ment_hlth              phys_hlth              diff_walk                    sex                    age 
+##                      0                      0                      0                      0                      0 
+##              education                 income 
+##                      0                      0</code></pre>
 <p>Data have 253680 records and 22 variables. Each record contains an
 individual’s BRFSS survey responses.</p>
 <pre class="r"><code>diabetes %&gt;%

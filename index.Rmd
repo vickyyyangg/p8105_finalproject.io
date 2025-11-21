@@ -12,6 +12,6 @@ output:
 
 ---
 
-Diabetes is a growing public health challenge in the United States, affecting millions of adults each year. As Type 2 diabetes is largely preventable,  identifying risk factors such as physical activity, smoking, and blood pressure levels etc can help guide preventive interventions and health education efforts. 
+Diabetes is a growing public health challenge in the United States, affecting millions of adults each year. As Type 2 diabetes is largely preventable, identifying risk factors such as physical activity, smoking, and blood pressure levels etc can help guide preventive interventions and health education efforts. 
 
-Our project aims to analyze how behavioral factors are associated with diabetes prevalence using the CDC’s  Behavioral Risk Factor Surveillance System (BRFSS) data. Also, we aim to develop a predictive model that estimates diabetes risk based on their health indicators. By the end of this project, we hope to contribute to the insights into which health behaviors and demographic characteristics are most predictive of diabetes risk.
+Our project aims to analyze how behavioral factors are associated with diabetes prevalence using the CDC’s Behavioral Risk Factor Surveillance System (BRFSS) data. Also, we aim to develop a predictive model that estimates diabetes risk based on their health indicators. By the end of this project, we hope to contribute to the insights into which health behaviors and demographic characteristics are most predictive of diabetes risk.
