@@ -254,19 +254,28 @@ $(document).ready(function () {
   <a href="report.html">Report</a>
 </li>
 <li>
-  <a href="prediction.html">Prediction</a>
+  <a href="introduction.html">Introduction</a>
+</li>
+<li>
+  <a href="data.html">Data</a>
 </li>
 <li>
   <a href="EDA.html">EDA</a>
 </li>
 <li>
-  <a>
+  <a href="analysis.html">Analysis</a>
+</li>
+<li>
+  <a href="discussion.html">Discussion</a>
+</li>
+<li>
+  <a href="mailto:&lt;vy2196@cumc.columbia.edu&gt;">
     <span class="fa fa-envelope fa-lg"></span>
      
   </a>
 </li>
 <li>
-  <a>
+  <a href="http://github.com/vickyyyangg/">
     <span class="fa fa-github fa-lg"></span>
      
   </a>
@@ -292,7 +301,7 @@ diabetes_original =
   read_csv(&quot;Diabete datasets/diabetes_012_health_indicators_BRFSS2015.csv&quot;) |&gt;
   janitor::clean_names() </code></pre>
 <pre><code>## Rows: 253680 Columns: 22
-## ── Column specification ───────────────────────────────────
+## ── Column specification ────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## dbl (22): Diabetes_012, HighBP, HighChol, CholCheck, BMI, Smoker, Stroke, He...
 ## 
@@ -374,7 +383,7 @@ cat(&quot;Macro F1 score is:&quot;, model1_macro_f1, &quot;\n&quot;)</code></pre
 <pre><code>## Macro F1 score is: 0.3918423</code></pre>
 <pre class="r"><code>model1__macro_auc &lt;- as.numeric(multiclass.roc(response = y_test, predictor = model1_prob)$auc)
 cat(&quot;Macro AUC is:&quot;, model1__macro_auc, &quot;\n&quot;)</code></pre>
-<pre><code>## Macro AUC is: 0.700909</code></pre>
+<pre><code>## Macro AUC is: 0.7009089</code></pre>
 <p>ROC</p>
 <pre class="r"><code>cols &lt;- c(&quot;blue&quot;, &quot;green&quot;, &quot;pink&quot;)
 
