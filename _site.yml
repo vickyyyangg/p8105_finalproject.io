@@ -17,6 +17,8 @@ navbar:
       href: analysis.html
     - text: "Discussion"
       href: discussion.html
+    - text: "Prediction"
+      href: prediction.html
     - icon: fa-envelope fa-lg
       href: mailto:<vy2196@cumc.columbia.edu>
     - icon: fa-github fa-lg

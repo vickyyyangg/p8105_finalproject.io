@@ -1,5 +1,5 @@
 ---
-title: "Building A Diabete Prediction Model"
+title: "Building A Diabetes Prediction Model"
 output:
   html_document:
     self_contained: false
