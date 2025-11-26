@@ -11,7 +11,7 @@
 
 
 
-<title>Building A Diabete Prediction Model</title>
+<title>Building Diabetes Prediction Models</title>
 
 <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -292,7 +292,7 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Building A Diabete Prediction Model</h1>
+<h1 class="title toc-ignore">Building Diabetes Prediction Models</h1>
 
 </div>
 
@@ -373,7 +373,9 @@ y_test &lt;- test$diabetes_012</code></pre>
   }
     mean(multi_f1_vec)
 }</code></pre>
-<p>Model 1: multinomial logistic regression</p>
+<div id="model-1-multinomial-logistic-regression"
+class="section level1">
+<h1>Model 1: Multinomial Logistic Regression</h1>
 <pre class="r"><code>model1 &lt;- multinom(diabetes_012 ~ ., data = train, trace = FALSE)</code></pre>
 <pre class="r"><code>model1_pred &lt;- predict(model1, newdata = test, type = &quot;class&quot;)
 model1_prob &lt;- predict(model1, newdata = test, type = &quot;prob&quot;)
@@ -434,6 +436,12 @@ ggplot(model1_cm_df, aes(x = Predicted, y = True, fill = Count)) +
   labs(title = &quot;Confusion Matrix Heatmap - Multi Log Regression&quot;, x = &quot;Predicted&quot;, y = &quot;True&quot;) +
   theme_minimal(base_size = 14)</code></pre>
 <p><img src="prediction_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+</div>
+<div id="model-2-binary-rangerrandomforest-model"
+class="section level1">
+<h1>Model 2: Binary Ranger/RandomForest Model</h1>
+<p>`</p>
+</div>
 
 
 

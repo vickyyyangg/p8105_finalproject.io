@@ -1,5 +1,5 @@
 ---
-title: "Building A Diabetes Prediction Model"
+title: "Building Diabetes Prediction Models"
 output:
   pdf_document:
     toc: false
@@ -87,7 +87,7 @@ multi_f1 <- function(true, pred) {
 
 
 
-Model 1: multinomial logistic regression
+# Model 1: Multinomial Logistic Regression
 ```{r}
 model1 <- multinom(diabetes_012 ~ ., data = train, trace = FALSE)
 ```
@@ -147,116 +147,18 @@ ggplot(model1_cm_df, aes(x = Predicted, y = True, fill = Count)) +
   theme_minimal(base_size = 14)
 ```
 
-
-
-
-
-
-
-
-
-
-
-RandomForest (3 outcomes)
+# Model 2: Binary Ranger/RandomForest Model
 ```{r}
-set.seed(1)
-
-# oversampling for class 1
-oversample_n <- 1000  
-
-train_class0 <- train |> 
-  filter(diabetes_012 == "0") %>% slice_sample(n = max(table(train$diabetes_012)), replace = TRUE)
-train_class1 <- train |>
-  filter(diabetes_012 == "1") %>% slice_sample(n = oversample_n, replace = TRUE)
-train_class2 <- train |>
-  filter(diabetes_012 == "2") %>% slice_sample(n = max(table(train$diabetes_012)), replace = TRUE)
-
-train_balanced <- bind_rows(train_class0, train_class1, train_class2)
-table(train_balanced$diabetes_012)
-
-# parameters
-num_trees <- 350
-mtry_val  <- max(1, floor((ncol(train_balanced)-1)/3))
-
-
-# Set class weights
-class_weights <- c("0" = 1, "1" = 4, "2" = 1)
-
-
-# Train Model
-rf_model <- ranger(
-  formula = diabetes_012 ~ ., 
-  data = train_balanced,
-  num.trees = num_trees,
-  mtry = mtry_val,
-  importance = "impurity",
-  probability = TRUE,
-  class.weights = class_weights,
-  seed = 1
-)
-```
-
-```{r}
-# Predictions
-rf_pred_prob  <- predict(rf_model, data = test)$predictions
-rf_pred_class <- colnames(rf_pred_prob)[max.col(rf_pred_prob)]
-
-table(rf_pred_class)  # verify class 1 predictions
-
-# check results
-rf_accuracy <- mean(rf_pred_class == y_test)
-cat("Accuracy:", rf_accuracy, "\n")
-
-rf_macro_f1 <- multi_f1(y_test, rf_pred_class)
-cat("Macro F1:", rf_macro_f1, "\n")
-
-rf_macro_auc <- as.numeric(multiclass.roc(response = y_test, predictor = rf_pred_prob)$auc)
-cat("Macro AUC:", rf_macro_auc, "\n")
-
-
-# Multi-class ROC
-cols <- c("blue", "green", "pink")
-rf_roc_list <- lapply(levels(y_test), function(cl) {
-  roc(as.numeric(y_test == cl), rf_pred_prob[, cl])
-})
-
-plot(rf_roc_list[[1]], col = cols[1], main = "ROC - RF")
-for(i in 2:length(rf_roc_list)) {
-  lines(rf_roc_list[[i]], col = cols[i])
-}
-
-rf_class_aucs <- sapply(rf_roc_list, auc)
-rf_class_aucs <- round(rf_class_aucs, 3)
-
-legend("bottomright",
-       legend = c(paste0("Class ", levels(y_test), " (AUC=", rf_class_aucs, ")"),
-                  paste0("Macro AUC=", round(rf_macro_auc, 3)),
-                  paste0("Accuracy=", round(rf_accuracy, 3)),
-                  paste0("Macro F1 Score=", round(rf_macro_f1, 3))),
-       col = c(cols, rep(NA, 3)),  
-       lwd = c(rep(2, 3), rep(NA, 3)))
-
-
-# Confusion matrix heatmap 
-rf_cm <- table(True = y_test, Pred = rf_pred_class)
-rf_cm_df <- as.data.frame(rf_cm) |>
-  rename(True = True, Predicted = Pred, Count = Freq)
-
-ggplot(rf_cm_df, aes(x = Predicted, y = True, fill = Count)) +
-  geom_tile(color = "white") +
-  geom_text(aes(label = Count), color = "black", size = 5) +
-  scale_fill_gradient(low = "white", high = "purple") +
-  labs(title = "Confusion Matrix Heatmap",
-       x = "Predicted", y = "True") +
-  theme_minimal(base_size = 14)
-dev.off()
-
-# Variable importance
-varImpPlot <- rf_model$variable.importance
-print(varImpPlot)
 ```
 
 
-```{r}
 
-```
+
+
+
+
+
+
+
+
+`
