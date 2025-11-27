@@ -1,0 +1,42 @@
+---
+title: "About Us"
+output: 
+  html_document:
+    toc: true
+    code_folding: hide
+    toc_float: true
+    theme: cosmo
+---
+
+
+Welcome to our project! Meet each and every one of our team members:
+
+---
+
+## Yvonne Xie
+- First year of M.S Biostatistics  
+- Health data science track
+
+---
+
+## Rosie Kwon
+- First year of M.S Biostatistics  
+- Theory and Methods track
+
+---
+
+## Vicky Yang
+- First year of M.S Biostatistics  
+- Health data science track
+
+---
+
+## Yiying Chen
+- First year of M.S Biostatistics  
+- Health data science track
+
+---
+
+## Charlotte Zhang
+- First year of M.S Biostatistics  
+- Health data science track

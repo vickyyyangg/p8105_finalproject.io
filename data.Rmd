@@ -168,7 +168,7 @@ We converted these to "Yes"/"No" factors to make the dataset more interpretable.
 
 The variable `diabetes_012` indicates whether a person has No Diabetes, Prediabetes, or Diabetes. This is a factor with three levels. For some analyses, we also created a binary target variable, `diabetes_2`, which groups individuals into two categories: non-diabetes and diabetes.
 
-This binary variable simplifies modeling when the goal is to predict the presence or absence of diabetes, while the original three-level factor can still be used for more detailed analyses or exploratory data visualization.
+This binary variable simplifies modeling to predict the presence or absence of diabetes, while the original three-level factor can still be used for more detailed analyses or exploratory data visualization.
 
 
 ### <b>Data Summary</b>
