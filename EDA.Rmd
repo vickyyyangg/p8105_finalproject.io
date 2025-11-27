@@ -9,9 +9,9 @@ output:
 
 ---
 
-### <b>Diabetes distribution</b>
+## <b>Diabetes distribution</b>
 
-```{r}
+```{r, echo=FALSE}
 diabetes |>  
   count(diabetes_012) |>  
   plot_ly(
@@ -28,9 +28,9 @@ diabetes |>
   )
 ```
 
-### <b>Sex & Age distribution</b>
+## <b>Sex & Age distribution</b>
 
-```{r}
+```{r , echo=FALSE}
 diabetes |>
   count(sex, age) |>  
   plot_ly(
@@ -48,7 +48,7 @@ diabetes |>
   )
 ```
 
-```{r}
+```{r , echo=FALSE}
 diabetes |>
   group_by(age, sex) |> 
   summarise(diabetes_rate = mean(diabetes_012 == "Diabetes")) |>  
@@ -68,9 +68,9 @@ diabetes |>
 ```
 
 
-### <b>BMI Distribution</b>
+## <b>BMI Distribution</b>
 
-```{r}
+```{r , echo=FALSE}
 plot_ly(
   data = diabetes,
   x = ~diabetes_012,
@@ -87,7 +87,7 @@ plot_ly(
 
 
 
-```{r}
+```{r, echo=FALSE}
 # filtering prediabetes
 diabetes_nd = diabetes |>
   filter(diabetes_012 != "Prediabetes") |>
@@ -119,9 +119,13 @@ binary_no_nd = binary_long_nd |>
   ungroup()
 ```
 
+## <b>Binary Variables</b>
+
+We started by splitting up the variables into three categories: binary variables, continuous variables and ordered categorical variables. Then, we compared all the variables within each category to diabetes. The binary variables are separated into three main parts: clinical conditions, lifestyle, and access to healthcare / function. 
 
 ### <b>Clinical Conditions vs Diabetes</b>
-```{r}
+Clinical conditions include high blood pressure, high cholesterol, stroke, and a history of heart disease or heart attack. The bar chart shows the proportions of participants who reported each condition and whether they also have diabetes. 
+```{r, echo=FALSE}
 clinical_vars = c("high_bp", "high_chol", "stroke", "heart_diseaseor_attack")
 
 # answered yes
@@ -139,6 +143,15 @@ p_clinical = binary_yes_nd |>
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
 
+
+ggplotly(p_clinical)
+
+```
+
+Among those who answered 'yes,' a history of heart disease or heart attack has the highest proportion of diabetes at 33.9% (~0.339). In contrast, participants with high cholesterol have the highest proportion of not having diabetes.
+
+
+```{r, echo=FALSE}
 # answered no
 p_clinical_no = binary_no_nd |>
   filter(variable %in% clinical_vars) |>
@@ -154,17 +167,15 @@ p_clinical_no = binary_no_nd |>
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
 
-
-
-ggplotly(p_clinical)
 ggplotly(p_clinical_no)
 ```
 
+This shows among those who answered 'no' to the clinical conditions, people who don’t have high blood pressure have the lowest proportion to have diabetes (~0.061). On the other hand, people who don’t have strokes have the highest proportion of having diabetes (~0.134).
 
 
 ### <b>Lifestyle vs Diabetes</b>
-
-```{r}
+The next category is lifestyle which include smoking, physical activity, fruits and vegetables intake, and heavy alcohol consumption. 
+```{r, echo=FALSE}
 behavior_vars = c("smoker", "phys_activity", "fruits", "veggies", "hvy_alcohol_consump")
 
 # answered yes
@@ -182,6 +193,15 @@ p_behavior = binary_yes_nd |>
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
 
+
+ggplotly(p_behavior)
+
+```
+
+Among those who answered 'yes' to these conditions, people who smoke have the highest proportion (~0.166) of having diabetes compared to rest variables. In contrast, people who have heavy alcohol consumption have the lowest proportion of people with diabetes (~0.059).
+
+```{r, echo=FALSE}
+
 # answered no
 p_behavior_no = binary_no_nd |>
   filter(variable %in% behavior_vars) |>
@@ -197,26 +217,23 @@ p_behavior_no = binary_no_nd |>
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
 
-
-
-ggplotly(p_behavior)
 ggplotly(p_behavior_no)
-```
 
+```
+This shows among those who answered 'no' to the lifestyle habits, people who don’t do physical activities have the highest proportion of having diabetes (~0.217). Those who don't smoke have the lower proportion of having diabetes (~0.123).
 
 ### <b>Healthcare Access and Function vs Diabetes</b>
+Lastly, the variables in healthcare access and function category include cholesterol check, health care coverage, health care affordability and difficulty walking.
+```{r, echo=FALSE}
+access_vars = c("chol_check", "any_healthcare", "no_docbc_cost", "diff_walk")
 
-```{r}
-access_vars = c("chol_check", "any_healthcare", "no_docbc_cost", "diff_walk", "sex")
-
-# answered yes
 p_access = binary_yes_nd |>
   filter(variable %in% access_vars) |>
   ggplot(aes(x = variable, y = prop, fill = diabetes_012)) +
   geom_col(position = "dodge") +
   scale_y_continuous(labels = scales::percent_format()) +
   labs(
-    title = "Access, Functional Limitations, and Sex: Proportion 'Yes'",
+    title = "Healthcare Access and Function: Proportion 'Yes' by Diabetes Status",
     x = NULL,
     y = "Proportion 'Yes'",
     fill = "Diabetes status"
@@ -224,6 +241,15 @@ p_access = binary_yes_nd |>
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
 
+ggplotly(p_access)
+
+```
+
+Among participants who answered ‘yes’ to these conditions, those who have difficulty walking have the highest proportion (~0.317) of having diabetes compared to the other variables. Those who have healthcare have the lowest proportion of having diabetes (~0.143).
+
+
+
+```{r, echo=FALSE}
 # answered no
 p_access_no = binary_no_nd |>
   filter(variable %in% access_vars) |>
@@ -231,7 +257,7 @@ p_access_no = binary_no_nd |>
   geom_col(position = "dodge") +
   scale_y_continuous(labels = scales::percent_format()) +
   labs(
-    title = "Access, Function, Sex: Proportion 'No' by Diabetes Status",
+    title = "Healthcare Access and Function: Proportion 'No' by Diabetes Status",
     x = NULL,
     y = "Proportion 'No'",
     fill = "Diabetes status"
@@ -239,9 +265,6 @@ p_access_no = binary_no_nd |>
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
 
-
-
-ggplotly(p_access)
 ggplotly(p_access_no)
 ```
-
+Among the participants who answered 'no,'those who have not experienced healthcare cost affordability issue have the highest proportion of having diabetes (~0.138). On the other hand, those who have not had a cholesterol check in the past five years have the lowest diabetes proportion (~0.026).

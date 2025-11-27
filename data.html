@@ -339,13 +339,13 @@ div.tocify {
   <a href="EDA.html">EDA</a>
 </li>
 <li>
+  <a href="prediction.html">Prediction</a>
+</li>
+<li>
   <a href="analysis.html">Analysis</a>
 </li>
 <li>
   <a href="discussion.html">Discussion</a>
-</li>
-<li>
-  <a href="prediction.html">Prediction</a>
 </li>
 <li>
   <a href="mailto:&lt;vy2196@cumc.columbia.edu&gt;">
@@ -373,8 +373,16 @@ div.tocify {
 </div>
 
 
-<div id="data-sets" class="section level3">
-<h3><b>Data Sets</b></h3>
+<div id="data-source" class="section level3">
+<h3><b>Data Source</b></h3>
+<p>This Kaggle dataset used data collected from Behavioral Risk Factor
+Surveillance System (BRFSS), a health-related telephone survey that is
+collected annually by the CDC. Each year, the survey collects responses
+from over 400,000 Americans on health-related risk behaviors, chronic
+health conditions, and the use of preventative services. It has been
+conducted every year since 1984. This specific dataset was from 2015.
+These features are either questions directly asked of participants, or
+calculated variables based on individual participant responses.</p>
 </div>
 <div id="data-cleaning" class="section level3">
 <h3><b>Data Cleaning</b></h3>
@@ -466,7 +474,7 @@ diabetes =
              labels = c(&quot;No Diabetes&quot;, &quot;Prediabetes&quot;, &quot;Diabetes&quot;))
   )</code></pre>
 <pre><code>## Rows: 253680 Columns: 22
-## ── Column specification ───────────────────────────────────
+## ── Column specification ────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## dbl (22): Diabetes_012, HighBP, HighChol, CholCheck, BMI, Smoker, Stroke, He...
 ## 

@@ -6,8 +6,8 @@ output:
     toc_float: true
     theme: cosmo
 ---
-### <b>Data Sets</b>
-
+### <b>Data Source</b>
+This Kaggle dataset used data collected from Behavioral Risk Factor Surveillance System (BRFSS), a health-related telephone survey that is collected annually by the CDC. Each year, the survey collects responses from over 400,000 Americans on health-related risk behaviors, chronic health conditions, and the use of preventative services. It has been conducted every year since 1984. This specific dataset was from 2015. These features are either questions directly asked of participants, or calculated variables based on individual participant responses.
 
 ### <b>Data Cleaning</b>
 
