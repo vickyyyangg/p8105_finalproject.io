@@ -374,6 +374,42 @@ ggplotly(p_access_no)
 ```
 Among the participants who answered 'no,'those who have not experienced healthcare cost affordability issue have the highest proportion of having diabetes (~0.138). On the other hand, those who have not had a cholesterol check in the past five years have the lowest diabetes proportion (~0.026).
 
+```{r}
+col_names = c("high_chol", "high_bp", "smoker", "hvy_alcohol_consump",
+               "phys_activity", "diff_walk")
+
+diabetes_long =
+  diabetes |> 
+  pivot_longer(cols = all_of(col_names),
+               names_to = "variable",
+               values_to = "value")
+
+title_map = c(
+  high_chol = "High Cholesterol Status",
+  high_bp = "High Blood Pressure",
+  smoker = "Smoking Status",
+  hvy_alcohol_consump = "Heavy Alcohol Consumption",
+  phys_activity = "Physical Activity",
+  diff_walk = "Difficulty Walking"
+)
+
+col_names = names(title_map)
+
+
+ggplot(diabetes_long, aes(x = diabetes_binary, fill = value)) +
+  geom_bar(position = "dodge") +
+  facet_wrap(~ variable, ncol = 2, 
+             labeller = labeller(variable = title_map)) +
+  scale_fill_manual(values = c("Yes" = "tomato", "No" = "skyblue")) +
+  labs(
+    x = "Diabetes Status",
+    y = "Count"
+  ) +
+  theme_minimal()
+```
+
+
+
 ## <b> continuous variables </b>
 
 In the dataset, we focus on Body Mass Index (BMI), mental health days, and physical health days. 
