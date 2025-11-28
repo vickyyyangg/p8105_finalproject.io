@@ -3,34 +3,83 @@ title: "Exploring Diabetes Risk Factors"
 output:
   html_document:
     self_contained: false
+    code_folding: hide
     toc: true
     toc_float: true
     theme: cosmo
 
 ---
 
-## <b>Diabetes distribution</b>
+```{r, include = FALSE, message = FALSE, warning = FALSE}
+# Load required libraries
+library(tidyverse)
+library(rvest)
+library(plotly)
 
-```{r, echo=FALSE}
+diabetes <- readRDS("clean_diabetes_data.rds")
+  
+binary_vars = c(
+  "high_bp", "high_chol", "chol_check",
+  "smoker", "stroke", "heart_diseaseor_attack",
+  "phys_activity", "hvy_alcohol_consump", "any_healthcare",
+  "no_docbc_cost", "diff_walk", "fruits", "veggies"
+)
+```
+
+
+## <b>Diabetes Status Overview </b>
+
+To begin the analysis, we examine how diabetes variable is distributed across the three diagnostic categories.
+```{r}
 diabetes |>  
   count(diabetes_012) |>  
-  plot_ly(
-    x = ~diabetes_012,
-    y = ~n,
-    type = "bar",
-    color = ~diabetes_012
-  ) |>  
-  layout(
-    barmode = "stack",
-    title = "Diabetes Prevalence",
-    xaxis = list(title = "Age Group"),
-    yaxis = list(title = "Count")
+  mutate(
+    percent = round(n / sum(n) * 100, 1)
+  ) |> 
+  ggplot(aes(x = diabetes_012, y = n, fill = diabetes_012)) +
+  geom_col() +
+  geom_text(aes(label = paste0(percent, "%"),vjust = -0.2), 
+  ) +
+  scale_fill_manual(
+  values = c(
+    "No Diabetes" = "skyblue",
+    "Prediabetes" = "orange",
+    "Diabetes" = "tomato"
+    )
+  ) +
+  labs(
+    title = "Diabetes distribution",
+    x = "Diabetes Category",
+    y = "Count"
+  ) +
+  theme_minimal()
+```
+
+The 84.2% of population in the BRFSS 2015 dataset do not have diabetes. 13.9% reported having Diabetes, and only 1.8% reported Prediabetes. Although diabetes affects a smaller portion of the sample, it still represents a substantial public health concern given the large population size.
+
+Because prediabetes accounts for a very small proportion of the sample, and because both diabetes and prediabetes represent elevated metabolic risk, we combined these two categories into a single “at-risk” group. 
+
+```{r}
+diabetes =
+  diabetes |> 
+  mutate(
+    diabetes_binary = 
+      factor(diabetes_2,
+             levels = c(0,1),
+             labels = c("No Diabetes", "Diabetes")),
   )
 ```
 
-## <b>Sex & Age distribution</b>
 
-```{r , echo=FALSE}
+## <b> Demographic Characteristics & Diabetes Patterns </b>
+
+We examined the demographic structure of the BRFSS sample dataset, including age, sex, education, income, and general health.
+
+Understanding population characteristics provides important context for interpreting diabetes prevalence and identifying meaningful risk patterns.
+
+### 1) Sex & Age
+
+```{r}
 diabetes |>
   count(sex, age) |>  
   plot_ly(
@@ -48,46 +97,98 @@ diabetes |>
   )
 ```
 
-```{r , echo=FALSE}
+The number of female participants is higher than that of males across most age groups. For both sexes, the sample size peaks in the mid-60s age group and is lowest among individuals aged 18–24. Since older age groups are naturally overrepresented in the dataset, we need to account for age when interpreting diabetes patterns. 
+
+```{r}
 diabetes |>
   group_by(age, sex) |> 
-  summarise(diabetes_rate = mean(diabetes_012 == "Diabetes")) |>  
+  summarize(
+    diabetes_rate = mean(diabetes_2 == 1)) |>  
   plot_ly(
     x = ~age,
     y = ~diabetes_rate,
     color = ~sex,
     colors = c("tomato","skyblue"),
     type = "scatter",
-    mode = "lines+markers"
+    mode = "markers"
   ) |>  
   layout(
-    title = "Diabetes Prevalence by Sex and Age Group",
+    title = "Diabetes prevalence by Sex and Age Group",
     xaxis = list(title = "Age Group"),
     yaxis = list(title = "Diabetes Rate")
   )
 ```
 
+Diabetes prevalence increases steadily with age for both males and females. The rate of diabetes increases rapidly from 40s and peak at aged 70-74. Prevalence of diabetes is higher in male compared to female across all age groups, indicating that a sex-specific pattern in diabetes risk that becomes more pronounced with age. 
 
-## <b>BMI Distribution</b>
+### 2) Education 
 
-```{r , echo=FALSE}
-plot_ly(
-  data = diabetes,
-  x = ~diabetes_012,
-  y = ~bmi,
-  color = ~diabetes_012,
-  type = "box"
-  ) |> 
-  layout(
-    title = "BMI Distribution by Diabetes Status",
-    xaxis = list(title = "Diabetes Status"),
-    yaxis = list(title = "BMI")
-  )
+In order to compare diabetes risk across education levels, a proportional plot was used since the large differences in group sizes can mask prevalence differences. 
+
+```{r}
+ggplot(diabetes, aes(y = education, fill = diabetes_binary)) +
+  geom_bar(position = "fill") +
+  scale_fill_manual(values = c(
+    "No Diabetes" = "lightgreen",
+    "Diabetes" = "salmon"
+  )) +
+  scale_x_continuous(labels = scales::percent_format()) +
+  labs(
+    title = "Proportion of Diabetes Status by Education Level",
+    x = "Proportion",
+    y = "Education Level",
+    fill = "Diabetes Status"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(hjust = 1))
 ```
 
+The proportional plot indicates that the distribution of diabetes status is relatively consistent across education levels. There is  gradient suggesting that lower educational attainment is slightly more associated with markedly different diabetes prevalence.
+
+### 3) Income
+
+```{r}
+diabetes |> 
+  ggplot(aes(y = income, fill = diabetes_binary))+
+  geom_bar() +
+  scale_fill_manual(values = c(
+    "No Diabetes" = "lightgreen",
+    "Diabetes" = "salmon"
+  )) +
+  labs(
+    title = "Diabetes Status by Income",
+    x = "Count",
+    y = "Income",
+    fill = "Diabetes Status"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(hjust = 1))
+```
+
+The number of diabetes cases appears visually similar across income levels. However, as there are large differences in total sample size between income groups, it is hard to determine whether income is associated with diabetes risk.
+
+```{r}
+ggplot(diabetes, aes(y = income, fill = diabetes_binary))+
+  geom_bar(position = "fill") +
+  scale_fill_manual(values = c(
+    "No Diabetes" = "lightgreen",
+    "Diabetes" = "salmon"
+  )) +
+  scale_x_continuous(labels = scales::percent_format()) +
+  labs(
+    title = "Proportion of Diabetes Status by Income Level",
+    x = "Proportion",
+    y = "Income Level",
+    fill = "Diabetes Status"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(hjust = 1))
+```
+
+The proportional plot indicates an inverse relationship between income and diabetes prevalence. Individuals with lower income levels show a higher proportion of diabetes, whereas those with higher income levels have a noticeably lower diabetes proportion.
 
 
-```{r, echo=FALSE}
+```{r}
 # filtering prediabetes
 diabetes_nd = diabetes |>
   filter(diabetes_012 != "Prediabetes") |>
@@ -119,13 +220,16 @@ binary_no_nd = binary_long_nd |>
   ungroup()
 ```
 
-## <b>Binary Variables</b>
+## <b> Binary Variables</b>
 
 We started by splitting up the variables into three categories: binary variables, continuous variables and ordered categorical variables. Then, we compared all the variables within each category to diabetes. The binary variables are separated into three main parts: clinical conditions, lifestyle, and access to healthcare / function. 
 
-### <b>Clinical Conditions vs Diabetes</b>
+### <b> Clinical / Health Indicators </b>
+
 Clinical conditions include high blood pressure, high cholesterol, stroke, and a history of heart disease or heart attack. The bar chart shows the proportions of participants who reported each condition and whether they also have diabetes. 
-```{r, echo=FALSE}
+
+
+```{r}
 clinical_vars = c("high_bp", "high_chol", "stroke", "heart_diseaseor_attack")
 
 # answered yes
@@ -151,7 +255,7 @@ ggplotly(p_clinical)
 Among those who answered 'yes,' a history of heart disease or heart attack has the highest proportion of diabetes at 33.9% (~0.339). In contrast, participants with high cholesterol have the highest proportion of not having diabetes.
 
 
-```{r, echo=FALSE}
+```{r}
 # answered no
 p_clinical_no = binary_no_nd |>
   filter(variable %in% clinical_vars) |>
@@ -174,8 +278,9 @@ This shows among those who answered 'no' to the clinical conditions, people who 
 
 
 ### <b>Lifestyle vs Diabetes</b>
+
 The next category is lifestyle which include smoking, physical activity, fruits and vegetables intake, and heavy alcohol consumption. 
-```{r, echo=FALSE}
+```{r}
 behavior_vars = c("smoker", "phys_activity", "fruits", "veggies", "hvy_alcohol_consump")
 
 # answered yes
@@ -200,7 +305,7 @@ ggplotly(p_behavior)
 
 Among those who answered 'yes' to these conditions, people who smoke have the highest proportion (~0.166) of having diabetes compared to rest variables. In contrast, people who have heavy alcohol consumption have the lowest proportion of people with diabetes (~0.059).
 
-```{r, echo=FALSE}
+```{r}
 
 # answered no
 p_behavior_no = binary_no_nd |>
@@ -249,7 +354,7 @@ Among participants who answered ‘yes’ to these conditions, those who have di
 
 
 
-```{r, echo=FALSE}
+```{r}
 # answered no
 p_access_no = binary_no_nd |>
   filter(variable %in% access_vars) |>
@@ -268,3 +373,151 @@ p_access_no = binary_no_nd |>
 ggplotly(p_access_no)
 ```
 Among the participants who answered 'no,'those who have not experienced healthcare cost affordability issue have the highest proportion of having diabetes (~0.138). On the other hand, those who have not had a cholesterol check in the past five years have the lowest diabetes proportion (~0.026).
+
+## <b> continuous variables </b>
+
+In the dataset, we focus on Body Mass Index (BMI), mental health days, and physical health days. 
+
+### 1) BMI 
+
+The mean BMI is `r round(mean(diabetes$bmi),3)` which falls within the overweight category. 
+
+```{r}
+diabetes |> 
+  plot_ly(
+    x = ~diabetes_binary,
+    y = ~bmi,
+    type = "violin",
+    color = ~diabetes_binary,
+    colors = c("skyblue","tomato"),
+    box = list(visible = TRUE),
+    meanline = list(visible = TRUE)
+  ) |> 
+  layout(
+    title = "BMI Distribution by Diabetes Status",
+    xaxis = list(title = "Diabetes Status"),
+    yaxis = list(title = "BMI")
+  )
+
+```
+
+Individuals with diabetes (median = 31.8) have noticeably higher BMI values compared to those without diabetes (median = 27.7). The pattern is consistent with established clinical evidence that higher BMI is a major risk factor for diabetes.
+
+### 2) Mental Health 
+
+The mean of the number of days in the past month during which an individual reported poor mental health is `r round(mean(diabetes$ment_hlth),3)`.
+
+
+```{r,error=FALSE}
+diabetes |> 
+  ggplot(aes(x = ment_hlth))+
+  geom_histogram()
+```
+
+Most of participants reported 0 mentally unhealthy days with a steep decline in frequency as the number of days increases. Only a relatively small portion of respondents reported persistent mental distress approaching the upper bound of the scale (20–30 days). 
+
+
+```{r}
+diabetes = 
+  diabetes |> 
+  mutate(
+    mental = case_when(
+      ment_hlth == 0 ~ "0 days",
+      ment_hlth >= 1 & ment_hlth <= 13 ~ "1-13 days",
+      ment_hlth >= 14 ~ "14+ days"
+    ),
+    mental = factor(mental, levels = c("0 days", "1-13 days", "14+ days"))
+  )
+
+```
+
+According to the CDC, an individual has frequent mental distress when they feel emotionally unhealthy, or very sad, anxious, or troubled, for at least 14 out of 30 days. Following this guideline, we categorized `ment_hlth` variable into 3 different levels : 0 days, 1-13 days, and 14+ days.
+
+```{r}
+diabetes |> 
+  ggplot(aes(x = mental, fill = diabetes_binary)) +
+  geom_bar(position = "dodge") +
+  scale_fill_manual(values = c(
+    "No Diabetes" = "lightgreen",
+    "Diabetes" = "salmon"
+  )) +
+  labs(
+    title = "Distribution of Mentally Unhealthy Days by Diabetes Status",
+    x = "Mental Health (Last 30 Days)",
+    y = "Count",
+    fill = "Diabetes Status"
+  ) +
+  theme_minimal()
+
+```
+
+```{r}
+mental_table =
+  diabetes |> 
+  count(mental, diabetes_binary) |> 
+  group_by(mental) |> 
+  mutate(
+    prop = round(n / sum(n) * 100, 1)
+  ) |> 
+  select(Mental = mental, Diabetes_Status = diabetes_binary, Count = n, Proportion = prop) 
+
+knitr::kable(mental_table)
+```
+
+The counts of mentally unhealthy days are higher among non-diabetes due to the large sample size. However, by looking at the proportion of diabetes for each categories of mental health, the proportion of individuals reporting frequent mental distress (23.7%) is higher among those with diabetes.   
+
+### 3) Physical Health
+
+```{r}
+diabetes |> 
+  ggplot(aes(x = phys_hlth)) +
+  geom_histogram()
+```
+
+Like the mental health measure, the physical health variable is heavily skewed towards 0 days. Based on CDC guideline, individuals experiencing 14 or more physically unhealthy days in the past 30 days are defined as having frequent physical distress. We categorized the `phys_hlth` variable into 3 levels : 0 days, 1-13 days, and 14+ days. 
+
+```{r}
+diabetes = 
+  diabetes |> 
+  mutate(
+    physical = case_when(
+      phys_hlth == 0 ~ "0 days",
+      phys_hlth >= 1 & phys_hlth <= 13 ~ "1-13 days",
+      phys_hlth >= 14 ~ "14+ days"
+    ),
+    mental = factor(mental, levels = c("0 days", "1-13 days", "14+ days"))
+  )
+```
+
+
+```{r}
+diabetes |> 
+  ggplot(aes(x = physical, fill = diabetes_binary)) +
+  geom_bar(position = "dodge") +
+  scale_fill_manual(values = c(
+    "No Diabetes" = "lightgreen",
+    "Diabetes" = "salmon"
+  )) +
+  labs(
+    title = "Distribution of Mentally Unhealthy Days by Diabetes Status",
+    x = "physical Health (Last 30 Days)",
+    y = "Count",
+    fill = "Diabetes Status"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+physical_table =
+  diabetes |> 
+  count(physical, diabetes_binary) |> 
+  group_by(physical) |> 
+  mutate(
+    prop = round(n / sum(n) * 100, 1)
+  ) |> 
+  select(Physical = physical, Diabetes_Status = diabetes_binary, Count = n, Proportion = prop) 
+
+knitr::kable(physical_table)
+```
+
+Individuals with diabetes show a higher count in both the 1–13 days and 14+ days categories than would be expected relative to the non-diabetic group, with 17.4% and 30.6%, respectively.

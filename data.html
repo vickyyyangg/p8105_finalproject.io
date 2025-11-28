@@ -446,7 +446,7 @@ diabetes =
     education = 
       factor(education, 
              levels = 
-               c(&quot;Never attended school or only kindergarten &quot;,&quot;Grade 1-8&quot;, &quot;Grade 9-11&quot;,
+               c(&quot;Never attended school&quot;,&quot;Grade 1-8&quot;, &quot;Grade 9-11&quot;,
                  &quot;High school graduate&quot;,&quot;College 1-3&quot;,
                  &quot;College graduate&quot;), 
              ordered = TRUE),
@@ -509,7 +509,9 @@ diabetes =
 diabetes[binary_vars] = lapply(
   diabetes[binary_vars],
   function(x) factor(ifelse(x == 1, &quot;Yes&quot;, &quot;No&quot;))
-)</code></pre>
+)
+
+saveRDS(diabetes, &quot;clean_diabetes_data.rds&quot;)</code></pre>
 <p>Data have 253680 records and 23 variables. Each record corresponds to
 an individual respondent and includes information on demographics,
 health conditions, lifestyle behaviors, and healthcare access.</p>
@@ -752,10 +754,10 @@ skim(diabetes)</code></pre>
 </tr>
 <tr class="even">
 <td align="left">education</td>
-<td align="right">174</td>
+<td align="right">0</td>
 <td align="right">1</td>
 <td align="left">TRUE</td>
-<td align="right">5</td>
+<td align="right">6</td>
 <td align="left">Col: 107325, Col: 69910, Hig: 62750, Gra: 9478</td>
 </tr>
 <tr class="odd">

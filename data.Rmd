@@ -85,7 +85,7 @@ diabetes =
     education = 
       factor(education, 
              levels = 
-               c("Never attended school or only kindergarten ","Grade 1-8", "Grade 9-11",
+               c("Never attended school","Grade 1-8", "Grade 9-11",
                  "High school graduate","College 1-3",
                  "College graduate"), 
              ordered = TRUE),
@@ -144,6 +144,7 @@ diabetes[binary_vars] = lapply(
   function(x) factor(ifelse(x == 1, "Yes", "No"))
 )
 
+saveRDS(diabetes, "clean_diabetes_data.rds")
 ```
 
 
