@@ -306,7 +306,7 @@ physical activity, age, and sex.</p>
 <h3>1.1 Fit the Model</h3>
 <pre class="r"><code>logit_model = glm(
   diabetes_binary ~ high_bp + high_chol + bmi + smoker + phys_activity + age + sex,
-  data = diabetes,
+  data = diabetes_temp,
   family = binomial(link = &quot;logit&quot;)
 )
 
@@ -315,7 +315,7 @@ summary(logit_model)</code></pre>
 ## Call:
 ## glm(formula = diabetes_binary ~ high_bp + high_chol + bmi + smoker + 
 ##     phys_activity + age + sex, family = binomial(link = &quot;logit&quot;), 
-##     data = diabetes)
+##     data = diabetes_temp)
 ## 
 ## Coefficients:
 ##                 Estimate Std. Error  z value Pr(&gt;|z|)    
@@ -382,15 +382,15 @@ class="section level3">
 <h3>1.3 Predicted Probability, Class Prediction, and Confusion
 Matrix</h3>
 <pre class="r"><code># Predicted probability
-diabetes$pred_prob &lt;- predict(logit_model, type = &quot;response&quot;)
+diabetes_temp$pred_prob &lt;- predict(logit_model, type = &quot;response&quot;)
 
 # Convert to class prediction at threshold = 0.5
-diabetes$pred_class &lt;- ifelse(diabetes$pred_prob &gt; 0.5, 1, 0)
+diabetes_temp$pred_class &lt;- ifelse(diabetes_temp$pred_prob &gt; 0.5, 1, 0)
 
 # Confusion matrix
 table(
-  Actual = diabetes$diabetes_binary,
-  Predicted = diabetes$pred_class
+  Actual = diabetes_temp$diabetes_binary,
+  Predicted = diabetes_temp$pred_class
 )</code></pre>
 <pre><code>##       Predicted
 ## Actual      0      1
@@ -406,7 +406,7 @@ table(
 <pre><code>## The following objects are masked from &#39;package:stats&#39;:
 ## 
 ##     cov, smooth, var</code></pre>
-<pre class="r"><code>roc_obj &lt;- roc(diabetes$diabetes_binary, diabetes$pred_prob)</code></pre>
+<pre class="r"><code>roc_obj &lt;- roc(diabetes_temp$diabetes_binary, diabetes_temp$pred_prob)</code></pre>
 <pre><code>## Setting levels: control = 0, case = 1</code></pre>
 <pre><code>## Setting direction: controls &lt; cases</code></pre>
 <pre class="r"><code>auc(roc_obj)</code></pre>
@@ -442,9 +442,9 @@ Predictors were converted to numeric matrices using model.matrix.</p>
 #Train/Test Split
 set.seed(123)
 
-train_index = createDataPartition(diabetes$diabetes_binary, p = 0.7, list = FALSE)
-train=diabetes[train_index, ]
-test=diabetes[-train_index, ]
+train_index = createDataPartition(diabetes_temp$diabetes_binary, p = 0.7, list = FALSE)
+train=diabetes_temp[train_index, ]
+test=diabetes_temp[-train_index, ]
 
 train$binary_outcome=as.numeric(train$diabetes_binary)
 test$binary_outcome=as.numeric(test$diabetes_binary)

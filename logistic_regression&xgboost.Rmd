@@ -36,7 +36,7 @@ scale_fill_discrete = scale_fill_viridis_d
 
 ```{r, include = FALSE, message = FALSE, warning = FALSE}
 #Load & Clean Dataset
-diabetes = 
+diabetes_temp = 
   read_csv("Diabete datasets/diabetes_012_health_indicators_BRFSS2015.csv") |>
   janitor::clean_names() |> 
   mutate(
@@ -131,7 +131,7 @@ binary_vars = c(
 )
 
 
-diabetes = diabetes %>%
+diabetes_temp = diabetes_temp %>%
   mutate(
     diabetes_binary = ifelse(diabetes_012 == "No Diabetes", 0, 1),
     diabetes_binary = as.numeric(diabetes_binary)
@@ -148,7 +148,7 @@ We fit a logistic regression model using health and lifestyle predictors such as
 ```{r}
 logit_model = glm(
   diabetes_binary ~ high_bp + high_chol + bmi + smoker + phys_activity + age + sex,
-  data = diabetes,
+  data = diabetes_temp,
   family = binomial(link = "logit")
 )
 
@@ -170,15 +170,15 @@ exp(cbind(
 
 ```{r}
 # Predicted probability
-diabetes$pred_prob <- predict(logit_model, type = "response")
+diabetes_temp$pred_prob <- predict(logit_model, type = "response")
 
 # Convert to class prediction at threshold = 0.5
-diabetes$pred_class <- ifelse(diabetes$pred_prob > 0.5, 1, 0)
+diabetes_temp$pred_class <- ifelse(diabetes_temp$pred_prob > 0.5, 1, 0)
 
 # Confusion matrix
 table(
-  Actual = diabetes$diabetes_binary,
-  Predicted = diabetes$pred_class
+  Actual = diabetes_temp$diabetes_binary,
+  Predicted = diabetes_temp$pred_class
 )
 ```
 
@@ -187,7 +187,7 @@ table(
 ```{r}
 library(pROC)
 
-roc_obj <- roc(diabetes$diabetes_binary, diabetes$pred_prob)
+roc_obj <- roc(diabetes_temp$diabetes_binary, diabetes_temp$pred_prob)
 auc(roc_obj)
 
 plot(roc_obj, main = "ROC Curve for Logistic Regression")
@@ -207,9 +207,9 @@ library(dplyr)
 #Train/Test Split
 set.seed(123)
 
-train_index = createDataPartition(diabetes$diabetes_binary, p = 0.7, list = FALSE)
-train=diabetes[train_index, ]
-test=diabetes[-train_index, ]
+train_index = createDataPartition(diabetes_temp$diabetes_binary, p = 0.7, list = FALSE)
+train=diabetes_temp[train_index, ]
+test=diabetes_temp[-train_index, ]
 
 train$binary_outcome=as.numeric(train$diabetes_binary)
 test$binary_outcome=as.numeric(test$diabetes_binary)
