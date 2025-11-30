@@ -71,7 +71,7 @@ diabetes =
 ```
 
 
-## <b> Demographic Characteristics & Diabetes Patterns </b>
+## <b>Demographic Characteristics & Diabetes Patterns </b>
 
 We examined the demographic structure of the BRFSS sample dataset, including age, sex, education, income, and general health.
 
@@ -224,7 +224,7 @@ binary_no_nd = binary_long_nd |>
 
 We started by splitting up the variables into three categories: binary variables, continuous variables and ordered categorical variables. Then, we compared all the variables within each category to diabetes. The binary variables are separated into three main parts: clinical conditions, lifestyle, and access to healthcare / function. 
 
-### <b> Clinical / Health Indicators </b>
+### 1) Clinical / Health Indicators 
 
 Clinical conditions include high blood pressure, high cholesterol, stroke, and a history of heart disease or heart attack. The bar chart shows the proportions of participants who reported each condition and whether they also have diabetes. 
 
@@ -277,7 +277,7 @@ ggplotly(p_clinical_no)
 This shows among those who answered 'no' to the clinical conditions, people who don’t have high blood pressure have the lowest proportion to have diabetes (~0.061). On the other hand, people who don’t have strokes have the highest proportion of having diabetes (~0.134).
 
 
-### <b>Lifestyle vs Diabetes</b>
+### 2) Lifestyle vs Diabetes
 
 The next category is lifestyle which include smoking, physical activity, fruits and vegetables intake, and heavy alcohol consumption. 
 ```{r}
@@ -327,7 +327,7 @@ ggplotly(p_behavior_no)
 ```
 This shows among those who answered 'no' to the lifestyle habits, people who don’t do physical activities have the highest proportion of having diabetes (~0.217). Those who don't smoke have the lower proportion of having diabetes (~0.123).
 
-### <b>Healthcare Access and Function vs Diabetes</b>
+### 3) Healthcare Access and Function vs Diabetes
 Lastly, the variables in healthcare access and function category include cholesterol check, health care coverage, health care affordability and difficulty walking.
 ```{r, echo=FALSE}
 access_vars = c("chol_check", "any_healthcare", "no_docbc_cost", "diff_walk")
@@ -410,7 +410,7 @@ ggplot(diabetes_long, aes(x = diabetes_binary, fill = value)) +
 
 
 
-## <b> continuous variables </b>
+## <b> Continuous variables </b>
 
 In the dataset, we focus on Body Mass Index (BMI), mental health days, and physical health days. 
 
