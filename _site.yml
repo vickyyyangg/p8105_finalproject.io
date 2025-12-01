@@ -16,7 +16,7 @@ navbar:
     - text: "Prediction"
       href: prediction.html
     - text: "Analysis"
-      href: analysis.html
+      href: logistic_regression-xgboost.html
     - text: "Discussion"
       href: discussion.html
     - icon: fa-envelope fa-lg
