@@ -266,7 +266,7 @@ $(document).ready(function () {
   <a href="prediction.html">Prediction</a>
 </li>
 <li>
-  <a href="analysis.html">Analysis</a>
+  <a href="logistic_regression_xgboost.html">Analysis</a>
 </li>
 <li>
   <a href="discussion.html">Discussion</a>
@@ -373,13 +373,13 @@ model1_prob &lt;- predict(model1, newdata = test, type = &quot;prob&quot;)
 
 model1_accuracy &lt;- mean(model1_pred == y_test)
 cat(&quot;Accuracy is:&quot;, model1_accuracy, &quot;\n&quot;)</code></pre>
-<pre><code>## Accuracy is: 0.8476397</code></pre>
+<pre><code>## Accuracy is: 0.8481719</code></pre>
 <pre class="r"><code>model1_macro_f1  &lt;- multi_f1(y_test, model1_pred)
 cat(&quot;Macro F1 score is:&quot;, model1_macro_f1, &quot;\n&quot;)</code></pre>
-<pre><code>## Macro F1 score is: 0.3926752</code></pre>
+<pre><code>## Macro F1 score is: 0.39549</code></pre>
 <pre class="r"><code>model1__macro_auc &lt;- as.numeric(multiclass.roc(response = y_test, predictor = model1_prob)$auc)
 cat(&quot;Macro AUC is:&quot;, model1__macro_auc, &quot;\n&quot;)</code></pre>
-<pre><code>## Macro AUC is: 0.7008048</code></pre>
+<pre><code>## Macro AUC is: 0.6955571</code></pre>
 <p>ROC</p>
 <pre class="r"><code>cols &lt;- c(&quot;blue&quot;, &quot;green&quot;, &quot;pink&quot;)
 
@@ -481,8 +481,8 @@ y_test &lt;- test_data$diabetes_2</code></pre>
   verbose = TRUE,
   probability = TRUE
 )</code></pre>
-<pre><code>## Growing trees.. Progress: 45%. Estimated remaining time: 37 seconds.
-## Growing trees.. Progress: 88%. Estimated remaining time: 8 seconds.</code></pre>
+<pre><code>## Growing trees.. Progress: 43%. Estimated remaining time: 40 seconds.
+## Growing trees.. Progress: 89%. Estimated remaining time: 7 seconds.</code></pre>
 <p>Prediction and Metrics</p>
 <pre class="r"><code>pred &lt;- predict(rf_model, data = test_data, type = &quot;response&quot;)
 
