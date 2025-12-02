@@ -29,6 +29,9 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
@@ -221,6 +224,69 @@ $(document).ready(function () {
 
 
 
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
 
 </head>
 
@@ -228,6 +294,16 @@ $(document).ready(function () {
 
 
 <div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -263,13 +339,16 @@ $(document).ready(function () {
   <a href="EDA.html">EDA</a>
 </li>
 <li>
-  <a href="analysis.html">Analysis</a>
+  <a href="prediction.html">Prediction</a>
+</li>
+<li>
+  <a href="logistic_regression_xgboost.html">Analysis</a>
+</li>
+<li>
+  <a href="chi_test.html">Characteristics</a>
 </li>
 <li>
   <a href="discussion.html">Discussion</a>
-</li>
-<li>
-  <a href="prediction.html">Prediction</a>
 </li>
 <li>
   <a href="mailto:&lt;vy2196@cumc.columbia.edu&gt;">
@@ -421,6 +500,12 @@ for (v in names(chi_results)) {
 ## df: 7 
 ## p-value: 0</code></pre>
 </div>
+<div id="chi-square-test-result" class="section level1">
+<h1>Chi-square test result</h1>
+<p><strong>All categorical variables</strong> showed statistically
+significant differences between diabetic and non-diabetic participants
+(all p &lt; 0.001).</p>
+</div>
 <div id="t-test-for-continuous-variables" class="section level1">
 <h1>T-test for continuous variables</h1>
 <pre class="r"><code>cont_vars &lt;- c(&quot;BMI&quot;, &quot;MentHlth&quot;, &quot;PhysHlth&quot;, &quot;GenHlth&quot;)
@@ -489,10 +574,64 @@ for (v in cont_vars) {
 ## sample estimates:
 ## mean in group 0 mean in group 1 
 ##        2.385185        3.290981</code></pre>
+<p>All tests showed <strong>highly significant differences</strong> (all
+p &lt; 2.2 × 10⁻¹⁶), indicating that the mean health outcomes differ
+substantially between the two groups.</p>
+</div>
+<div id="visualization-for-continuous-variables" class="section level1">
+<h1>Visualization for continuous variables</h1>
+<pre class="r"><code>library(dplyr)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>library(tidyr)
+library(ggplot2)
+
+df_cont &lt;- 
+  chi_diabetes |&gt;
+  pivot_longer(cols = all_of(cont_vars),
+               names_to = &quot;variable&quot;,
+               values_to = &quot;value&quot;)
+
+ggplot(df_cont,aes(x = factor(Diabetes_binary,
+                    levels = c(0, 1),
+                    labels = c(&quot;Non-diabetes&quot;, &quot;Diabetes&quot;)),
+                    y = value,
+                    fill = factor(Diabetes_binary))) +
+  geom_boxplot(outlier.alpha = 0.15) +
+  facet_wrap(~ variable, scales = &quot;free_y&quot;) +
+  labs(
+    title = &quot;Continuous variables of Diabetes Status&quot;,
+    x = &quot;Diabetes Status&quot;,
+    y = &quot;Count&quot;
+  ) +
+  theme_minimal() +
+  theme(legend.position = &quot;none&quot;)</code></pre>
+<p><img src="chi_test_files/figure-html/t_test_plot-1.png" width="672" /></p>
+<div id="comments-on-the-plot" class="section level2">
+<h2>Comments on the plot</h2>
+<ul>
+<li><strong>BMI:</strong> Diabetic individuals display noticeably higher
+BMI levels.</li>
+<li><strong>GenHlth:</strong> Diabetic participants report worse general
+health compared to the non-diabetic group.</li>
+<li><strong>MentHlth:</strong> Diabetic individuals experience more days
+of poor mental health.</li>
+<li><strong>PhysHlth:</strong> The diabetic group reports substantially
+more days of poor physical health.</li>
+</ul>
+</div>
 </div>
 
 
 
+</div>
+</div>
 
 </div>
 
@@ -525,6 +664,35 @@ $(document).ready(function () {
 
 <!-- code folding -->
 
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

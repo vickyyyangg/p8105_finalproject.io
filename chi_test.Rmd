@@ -1,6 +1,9 @@
 ---
 title: "Characteristics between diabetic and non-diabetic groups"
-output: html_document
+output:
+  html_document:
+    toc: true
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
@@ -34,6 +37,9 @@ for (v in names(chi_results)) {
 
 ```
 
+# Chi-square test result
+**All categorical variables** showed statistically significant differences between diabetic and non-diabetic participants (all p < 0.001).
+
 # T-test for continuous variables
 ```{r t_test}
 cont_vars <- c("BMI", "MentHlth", "PhysHlth", "GenHlth")
@@ -44,3 +50,41 @@ for (v in cont_vars) {
   print(t.test(chi_diabetes[[v]] ~ chi_diabetes$Diabetes_binary))
 }
 ```
+
+All tests showed **highly significant differences** (all p < 2.2 × 10⁻¹⁶), indicating that the mean health outcomes differ substantially between the two groups.
+
+
+# Visualization for continuous variables
+```{r t_test_plot, warning=FALSE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+df_cont <- 
+  chi_diabetes |>
+  pivot_longer(cols = all_of(cont_vars),
+               names_to = "variable",
+               values_to = "value")
+
+ggplot(df_cont,aes(x = factor(Diabetes_binary,
+                    levels = c(0, 1),
+                    labels = c("Non-diabetes", "Diabetes")),
+                    y = value,
+                    fill = factor(Diabetes_binary))) +
+  geom_boxplot(outlier.alpha = 0.15) +
+  facet_wrap(~ variable, scales = "free_y") +
+  labs(
+    title = "Continuous variables of Diabetes Status",
+    x = "Diabetes Status",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+## Comments on the plot
+
+- **BMI:** Diabetic individuals display noticeably higher BMI levels.
+- **GenHlth:** Diabetic participants report worse general health compared to the non-diabetic group.
+- **MentHlth:** Diabetic individuals experience more days of poor mental health.
+- **PhysHlth:** The diabetic group reports substantially more days of poor physical health.
