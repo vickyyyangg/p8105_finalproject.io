@@ -31,7 +31,7 @@ project, we hope to provide actionable insights into the most influential factor
 
 ### <b>Related work</b>
 
-
+Our project to analyze US diabetes data were motivated by compelling evidence from the CDC’s [National Diabetes Statistics Report](https://www.cdc.gov/diabetes/php/data-research/index.html)  and the article [“How have diabetes costs and outcomes changed over time in the U.S.?”](https://www.healthsystemtracker.org/chart-collection/diabetes-care-u-s-changed-time/), published by Health system tracker. It shows that diabetes prevalence increases over time and the burden of diabetes regarding money is higher for people with diabetes than those without in the US. Like [type 2 test](https://diabetes.org/diabetes-risk-test) from American Diabetes Association, we would like to create a website that can predict risk of diabetes. In our project, as the data didn’t specify the particular type of diabetes, our predictive model is designed to provide a comprehensive prediction for general diabetes risk.
 
 
 ### <b>Initial questions</b>
