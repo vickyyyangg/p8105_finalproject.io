@@ -158,3 +158,108 @@ ggplot(diabetes, aes(y = income, fill = diabetes_binary))+
 ```
 
 The proportional plot indicates an inverse relationship between income and diabetes prevalence. Individuals with lower income levels show a higher proportion of diabetes, whereas those with higher income levels have a noticeably lower diabetes proportion.
+
+## Characteristics analysis
+To evaluate whether key variables differ significantly between diabetes and non-diabetes groups, chi-square tests were conducted for categorical variables and t-tests were performed for continuous variables. In this analysis, the binary diabetes dataset was used, where prediabetes and diabetes were combined into a single diabetes group. Among the 21 variables in the dataset, 17 are categorical and 4 are continuous. A chi-square test for categorical variables assesses whether the distribution of a characteristic differs significantly between groups, whereas a t-test for continuous variables compares group means to determine whether differences in average values are statistically significant.
+
+```{r, warning=FALSE, message=FALSE}
+library(dplyr)
+library(knitr)
+chi_diabetes = read.csv("Diabete datasets/diabetes_binary_health_indicators_BRFSS2015.csv")
+
+cat_vars <- c(
+  "HighBP", "HighChol", "CholCheck","Smoker", "Stroke", "HeartDiseaseorAttack",
+  "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump",
+  "AnyHealthcare", "NoDocbcCost", "DiffWalk",
+  "Sex", "Age", "Education", "Income"
+)
+
+chi_results <- list()
+
+for (v in cat_vars) {
+  tbl <- table(chi_diabetes$Diabetes_binary, chi_diabetes[[v]])
+  test <- chisq.test(tbl)
+  chi_results[[v]] <- test
+}
+
+chi_table <- data.frame(
+  Variable   = names(chi_results),
+  Chi_square = sapply(chi_results, function(x) unname(x$statistic)),
+  df         = sapply(chi_results, function(x) unname(x$parameter)),
+  p_value    = sapply(chi_results, function(x) x$p.value)
+)
+
+chi_table$p_value <- format(chi_table$p_value, scientific = TRUE) #show detailed p-value result
+
+kable(chi_table, digits = 4, row.names = FALSE, caption = "Chi-square test results for categorical variables") #put everything neatly in a table
+```
+
+Based on the **chi-square test results**, all categorical variables show extremely small p-values. Specifically, HighBP, HighChol, Stroke, HeartDiseaseorAttack, PhysActivity, DiffWalk, Age, Education, and Income have p-values effectively equal to zero, indicating that these characteristics differ substantially between the diabetes and non-diabetes groups. The chi-square statistics are also very large, suggesting strong deviations from what would be expected if the two variables were independent. In other words, these health and demographic characteristics are strongly associated with diabetes status in this dataset.
+
+```{r t_test, warning=FALSE, message=FALSE}
+cont_vars <- c("BMI", "MentHlth", "PhysHlth", "GenHlth")
+
+# Run t-tests and extract key results
+t_results <- lapply(cont_vars, function(v) {
+  
+  tt <- t.test(chi_diabetes[[v]] ~ chi_diabetes$Diabetes_binary)
+  
+  data.frame(
+    Variable        = v,
+    Mean_non_diab   = unname(tt$estimate[1]),
+    Mean_diab       = unname(tt$estimate[2]),
+    t_statistic     = unname(tt$statistic),
+    df              = unname(tt$parameter),
+    p_value         = tt$p.value
+  )
+})
+
+# Combine list rows into a data frame
+t_table <- bind_rows(t_results)
+
+# Format values
+t_table <- t_table |>
+  mutate(
+    Mean_non_diab = round(Mean_non_diab, 2),
+    Mean_diab     = round(Mean_diab, 2),
+    t_statistic   = round(t_statistic, 2),
+    df            = round(df, 1),
+    p_value       = p_value)
+
+t_table$p_value <- formatC(t_table$p_value, format = "e", digits = 2)
+
+# Print table
+kable(t_table, caption = "Summary of t-tests")
+```
+```{r t_test_plot, warning=FALSE, message=FALSE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+df_cont <- 
+  chi_diabetes |>
+  pivot_longer(cols = all_of(cont_vars),
+               names_to = "variable",
+               values_to = "value")
+
+ggplot(df_cont,aes(x = factor(Diabetes_binary,
+                    levels = c(0, 1),
+                    labels = c("Non-diabetes", "Diabetes")),
+                    y = value,
+                    fill = factor(Diabetes_binary))) +
+  geom_boxplot(outlier.alpha = 0.15) +
+  facet_wrap(~ variable, scales = "free_y") +
+  labs(
+    title = "Continuous variables of Diabetes Status",
+    x = "Diabetes Status",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+Similarly, the **t-test results** show that all continuous variables have extremely small p-values, indicating significant mean differences between individuals with and without diabetes. Specifically, participants in the diabetes group have higher BMI, report more days of poor physical and mental health, and assign worse general health ratings compared with non-diabetic individuals. These substantial mean differences, together with large t-statistics and narrow confidence intervals, provide strong evidence that these continuous health measures are associated with diabetes status.
+
+### Discussion: 
+ 
+In general, all characteristics show significant differences between individuals with and without diabetes. This aligns with expectations, as many health and demographic factors, such as blood pressure, cholesterol, physical activity, age, and income, are known to be associated with diabetes risk. One thing that we didn’t expect is that many p-values are extremely small, indicating exceptionally strong group differences. This suggests that the predictors in this dataset have very strong associations with diabetes status, much stronger than what might typically be observed in population-level studies. Overall, these results highlight clear disparities in health behaviors, health status, and demographic characteristics between diabetic and non-diabetic individuals, providing insight into the underlying factors that may contribute to diabetes risk.
