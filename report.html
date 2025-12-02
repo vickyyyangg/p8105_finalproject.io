@@ -36,6 +36,14 @@
 <script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet" />
+<script src="site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="site_libs/plotly-binding-4.11.0/plotly.js"></script>
+<script src="site_libs/typedarray-0.1/typedarray.min.js"></script>
+<link href="site_libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
+<link href="site_libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="site_libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
 <link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
 
@@ -991,6 +999,141 @@ climbing stairs? (0 = no 1 = yes)</p>
 </div>
 <div id="exploratory-data-analysis" class="section level2">
 <h2>Exploratory Data Analysis</h2>
+</div>
+<div id="diabetes-status-overview" class="section level2">
+<h2><b>Diabetes Status Overview </b></h2>
+<p>To begin the analysis, we examine how diabetes variable is
+distributed across the three diagnostic categories.</p>
+<p>Because prediabetes accounts for a very small proportion of the
+sample, and because both diabetes and prediabetes represent elevated
+metabolic risk, we combined these two categories into a single “at-risk”
+group.</p>
+<pre class="r"><code>diabetes =
+  diabetes |&gt; 
+  mutate(
+    diabetes_binary = 
+      factor(diabetes_2,
+             levels = c(0,1),
+             labels = c(&quot;No Diabetes&quot;, &quot;Diabetes&quot;)),
+  )
+
+diabetes |&gt;  
+  count(diabetes_binary) |&gt;  
+  mutate(
+    percent = round(n / sum(n) * 100, 1)
+  ) |&gt; 
+  ggplot(aes(x = diabetes_binary, y = n, fill = diabetes_binary)) +
+  geom_col() +
+  geom_text(aes(label = paste0(percent, &quot;%&quot;),vjust = -0.2), 
+  ) +
+  scale_fill_manual(
+  values = c(
+    &quot;No Diabetes&quot; = &quot;skyblue&quot;,
+    &quot;Diabetes&quot; = &quot;tomato&quot;
+    )
+  ) +
+  labs(
+    title = &quot;Diabetes distribution&quot;,
+    x = &quot;Diabetes Category&quot;,
+    y = &quot;Count&quot;
+  ) +
+  theme_minimal()</code></pre>
+<p><img src="report_files/figure-html/unnamed-chunk-4-1.png" width="90%" /></p>
+<p>The 84.2% of population in the dataset do not have diabetes while
+15.6% reported having Diabetes. Although diabetes affects a smaller
+portion of the sample, it still represents a substantial public health
+concern given the large population size.</p>
+</div>
+<div id="demographic-characteristics-diabetes-patterns"
+class="section level2">
+<h2><b>Demographic Characteristics &amp; Diabetes Patterns </b></h2>
+<p>We examined the demographic structure of the BRFSS sample dataset,
+including age, sex, education, income, and general health.</p>
+<p>Understanding population characteristics provides important context
+for interpreting diabetes prevalence and identifying meaningful risk
+patterns.</p>
+<div id="sex-age" class="section level3">
+<h3>1) Sex &amp; Age</h3>
+<pre class="r"><code>diabetes |&gt;
+  group_by(age, sex) |&gt; 
+  summarize(
+    diabetes_rate = mean(diabetes_2 == 1)) |&gt;  
+  plot_ly(
+    x = ~age,
+    y = ~diabetes_rate,
+    color = ~sex,
+    colors = c(&quot;tomato&quot;,&quot;skyblue&quot;),
+    type = &quot;scatter&quot;,
+    mode = &quot;markers&quot;
+  ) |&gt;  
+  layout(
+    title = &quot;Diabetes prevalence by Sex and Age Group&quot;,
+    xaxis = list(title = &quot;Age Group&quot;),
+    yaxis = list(title = &quot;Diabetes Rate&quot;)
+  )</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;age&#39;. You can override using the `.groups`
+## argument.</code></pre>
+<div class="plotly html-widget html-fill-item" id="htmlwidget-2f5342579ccdf4bf02aa" style="width:90%;height:345.6px;"></div>
+<script type="application/json" data-for="htmlwidget-2f5342579ccdf4bf02aa">{"x":{"visdat":{"15e1171dc09da":["function () ","plotlyVisDat"]},"cur_data":"15e1171dc09da","attrs":{"15e1171dc09da":{"x":{},"y":{},"mode":"markers","color":{},"colors":["tomato","skyblue"],"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Diabetes prevalence by Sex and Age Group","xaxis":{"domain":[0,1],"automargin":true,"title":"Age Group","type":"category","categoryorder":"array","categoryarray":["18-24","25–29","30–34","35–39","40–44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80+"]},"yaxis":{"domain":[0,1],"automargin":true,"title":"Diabetes Rate"},"hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":["18-24","25–29","30–34","35–39","40–44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80+"],"y":[0.022222222222222223,0.03157103482836382,0.040085780270537774,0.057734627831715207,0.073555166374781086,0.099469253294289892,0.12671394799054372,0.14780468258057131,0.18351485961359532,0.20419320295327734,0.21863363477467893,0.22032278615417286,0.18950769815624405],"mode":"markers","type":"scatter","name":"Female","marker":{"color":"rgba(255,99,71,1)","line":{"color":"rgba(255,99,71,1)"}},"textfont":{"color":"rgba(255,99,71,1)"},"error_y":{"color":"rgba(255,99,71,1)"},"error_x":{"color":"rgba(255,99,71,1)"},"line":{"color":"rgba(255,99,71,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["18-24","25–29","30–34","35–39","40–44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80+"],"y":[0.012859560067681896,0.01885223177155531,0.028255285516696305,0.052804198097736961,0.077196980487110101,0.10876166910358789,0.14162829090277174,0.16695352839931152,0.20583717357910905,0.25133208774479276,0.27626759205706575,0.27019201462968606,0.24382400233883936],"mode":"markers","type":"scatter","name":"Male","marker":{"color":"rgba(135,206,235,1)","line":{"color":"rgba(135,206,235,1)"}},"textfont":{"color":"rgba(135,206,235,1)"},"error_y":{"color":"rgba(135,206,235,1)"},"error_x":{"color":"rgba(135,206,235,1)"},"line":{"color":"rgba(135,206,235,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<p>Diabetes prevalence increases steadily with age for both males and
+females. The rate of diabetes increases rapidly from 40s and peak at
+aged 70-74. Prevalence of diabetes is higher in male compared to female
+across all age groups, indicating that a sex-specific pattern in
+diabetes risk that becomes more pronounced with age.</p>
+</div>
+<div id="education" class="section level3">
+<h3>2) Education</h3>
+<p>In order to compare diabetes risk across education levels, a
+proportional plot was used since the large differences in group sizes
+can mask prevalence differences.</p>
+<pre class="r"><code>ggplot(diabetes, aes(y = education, fill = diabetes_binary)) +
+  geom_bar(position = &quot;fill&quot;) +
+  scale_fill_manual(values = c(
+    &quot;No Diabetes&quot; = &quot;lightgreen&quot;,
+    &quot;Diabetes&quot; = &quot;salmon&quot;
+  )) +
+  scale_x_continuous(labels = scales::percent_format()) +
+  labs(
+    title = &quot;Proportion of Diabetes Status by Education Level&quot;,
+    x = &quot;Proportion&quot;,
+    y = &quot;Education Level&quot;,
+    fill = &quot;Diabetes Status&quot;
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(hjust = 1))</code></pre>
+<p><img src="report_files/figure-html/unnamed-chunk-6-1.png" width="90%" /></p>
+<p>The proportional plot indicates that the distribution of diabetes
+status is relatively consistent across education levels. There is
+gradient suggesting that lower educational attainment is slightly more
+associated with markedly different diabetes prevalence.</p>
+</div>
+<div id="income" class="section level3">
+<h3>3) Income</h3>
+<p>Even though the number of diabetes cases appears visually similar
+across income levels, we used a proportional plot for income variable as
+there are large differences in total sample size between income
+groups..</p>
+<pre class="r"><code>ggplot(diabetes, aes(y = income, fill = diabetes_binary))+
+  geom_bar(position = &quot;fill&quot;) +
+  scale_fill_manual(values = c(
+    &quot;No Diabetes&quot; = &quot;lightgreen&quot;,
+    &quot;Diabetes&quot; = &quot;salmon&quot;
+  )) +
+  scale_x_continuous(labels = scales::percent_format()) +
+  labs(
+    title = &quot;Proportion of Diabetes Status by Income Level&quot;,
+    x = &quot;Proportion&quot;,
+    y = &quot;Income Level&quot;,
+    fill = &quot;Diabetes Status&quot;
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(hjust = 1))</code></pre>
+<p><img src="report_files/figure-html/unnamed-chunk-7-1.png" width="90%" /></p>
+<p>The proportional plot indicates an inverse relationship between
+income and diabetes prevalence. Individuals with lower income levels
+show a higher proportion of diabetes, whereas those with higher income
+levels have a noticeably lower diabetes proportion.</p>
+</div>
 </div>
 
 
