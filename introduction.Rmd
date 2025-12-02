@@ -31,12 +31,10 @@ project, we hope to provide actionable insights into the most influential factor
 
 ### <b>Related work</b>
 
-Anything that inspired you, such as a paper, a web site, or something we discussed in class.
+
 
 
 ### <b>Initial questions</b>
-
-What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis?
 
 At first, we mainly focus on behavior factors that might influence the risk of diabetes. After analyzing data, we expanded our scope to include both clinical and health care access. 
 
@@ -45,7 +43,4 @@ At first, we mainly focus on behavior factors that might influence the risk of d
 - What is the most effective model for estimating diabetes risk based on the health indicators? 
 
 In the future, we want to answer whether our prediction model can predict accurately with different sets of dataset. 
-
-
-
 
