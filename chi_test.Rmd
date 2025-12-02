@@ -11,7 +11,9 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 # Chi-square test for categorical variables
-```{r}
+```{r, warning=FALSE, message=FALSE}
+library(dplyr)
+library(knitr)
 chi_diabetes = read.csv("Diabete datasets/diabetes_binary_health_indicators_BRFSS2015.csv")
 
 cat_vars <- c(
@@ -20,6 +22,7 @@ cat_vars <- c(
   "AnyHealthcare", "NoDocbcCost", "DiffWalk",
   "Sex", "Age", "Education", "Income"
 )
+
 chi_results <- list()
 
 for (v in cat_vars) {
@@ -28,28 +31,56 @@ for (v in cat_vars) {
   chi_results[[v]] <- test
 }
 
-for (v in names(chi_results)) {
-  cat("\n====================\n")
-  cat("Variable:", v, "\n")
-  cat("Chi-square:", chi_results[[v]]$statistic, "\n")
-  cat("df:", chi_results[[v]]$parameter, "\n")
-  cat("p-value:", chi_results[[v]]$p.value, "\n")
-}
+chi_table <- data.frame(
+  Variable   = names(chi_results),
+  Chi_square = sapply(chi_results, function(x) unname(x$statistic)),
+  df         = sapply(chi_results, function(x) unname(x$parameter)),
+  p_value    = sapply(chi_results, function(x) x$p.value)
+)
 
+chi_table$p_value <- format(chi_table$p_value, scientific = TRUE) #show detailed p-value result
+
+kable(chi_table, digits = 4, row.names = FALSE, caption = "Chi-square test results for categorical variables") #put everything neatly in a table
 ```
 
 ## Chi-square test result
 **All categorical variables** showed statistically significant differences between diabetic and non-diabetic participants (all p < 0.001).
 
 # T-test for continuous variables
-```{r t_test}
+```{r t_test, warning=FALSE, message=FALSE}
 cont_vars <- c("BMI", "MentHlth", "PhysHlth", "GenHlth")
 
-for (v in cont_vars) {
-  cat("\n==========================\n")
-  cat("Outcome:", v, "\n")
-  print(t.test(chi_diabetes[[v]] ~ chi_diabetes$Diabetes_binary))
-}
+# Run t-tests and extract key results
+t_results <- lapply(cont_vars, function(v) {
+  
+  tt <- t.test(chi_diabetes[[v]] ~ chi_diabetes$Diabetes_binary)
+  
+  data.frame(
+    Variable        = v,
+    Mean_non_diab   = unname(tt$estimate[1]),
+    Mean_diab       = unname(tt$estimate[2]),
+    t_statistic     = unname(tt$statistic),
+    df              = unname(tt$parameter),
+    p_value         = tt$p.value
+  )
+})
+
+# Combine list rows into a data frame
+t_table <- bind_rows(t_results)
+
+# Format values
+t_table <- t_table |>
+  mutate(
+    Mean_non_diab = round(Mean_non_diab, 2),
+    Mean_diab     = round(Mean_diab, 2),
+    t_statistic   = round(t_statistic, 2),
+    df            = round(df, 1),
+    p_value       = p_value)
+
+t_table$p_value <- formatC(t_table$p_value, format = "e", digits = 2)
+
+# Print table
+kable(t_table, caption = "Summary of t-tests")
 ```
 
 ## T-test result

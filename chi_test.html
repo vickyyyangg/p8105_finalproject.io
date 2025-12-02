@@ -13,7 +13,7 @@
 
 <title>Characteristics between diabetic and non-diabetic groups</title>
 
-<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.30/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -392,7 +392,9 @@ non-diabetic groups</h1>
 <div id="chi-square-test-for-categorical-variables"
 class="section level1">
 <h1>Chi-square test for categorical variables</h1>
-<pre class="r"><code>chi_diabetes = read.csv(&quot;Diabete datasets/diabetes_binary_health_indicators_BRFSS2015.csv&quot;)
+<pre class="r"><code>library(dplyr)
+library(knitr)
+chi_diabetes = read.csv(&quot;Diabete datasets/diabetes_binary_health_indicators_BRFSS2015.csv&quot;)
 
 cat_vars &lt;- c(
   &quot;HighBP&quot;, &quot;HighChol&quot;, &quot;CholCheck&quot;,&quot;Smoker&quot;, &quot;Stroke&quot;, &quot;HeartDiseaseorAttack&quot;,
@@ -400,6 +402,7 @@ cat_vars &lt;- c(
   &quot;AnyHealthcare&quot;, &quot;NoDocbcCost&quot;, &quot;DiffWalk&quot;,
   &quot;Sex&quot;, &quot;Age&quot;, &quot;Education&quot;, &quot;Income&quot;
 )
+
 chi_results &lt;- list()
 
 for (v in cat_vars) {
@@ -408,115 +411,131 @@ for (v in cat_vars) {
   chi_results[[v]] &lt;- test
 }
 
-for (v in names(chi_results)) {
-  cat(&quot;\n====================\n&quot;)
-  cat(&quot;Variable:&quot;, v, &quot;\n&quot;)
-  cat(&quot;Chi-square:&quot;, chi_results[[v]]$statistic, &quot;\n&quot;)
-  cat(&quot;df:&quot;, chi_results[[v]]$parameter, &quot;\n&quot;)
-  cat(&quot;p-value:&quot;, chi_results[[v]]$p.value, &quot;\n&quot;)
-}</code></pre>
-<pre><code>## 
-## ====================
-## Variable: HighBP 
-## Chi-square: 17562.45 
-## df: 1 
-## p-value: 0 
-## 
-## ====================
-## Variable: HighChol 
-## Chi-square: 10174.07 
-## df: 1 
-## p-value: 0 
-## 
-## ====================
-## Variable: CholCheck 
-## Chi-square: 1062.938 
-## df: 1 
-## p-value: 3.751399e-233 
-## 
-## ====================
-## Variable: Smoker 
-## Chi-square: 937.0558 
-## df: 1 
-## p-value: 8.640172e-206 
-## 
-## ====================
-## Variable: Stroke 
-## Chi-square: 2838.917 
-## df: 1 
-## p-value: 0 
-## 
-## ====================
-## Variable: HeartDiseaseorAttack 
-## Chi-square: 7971.156 
-## df: 1 
-## p-value: 0 
-## 
-## ====================
-## Variable: PhysActivity 
-## Chi-square: 3539.419 
-## df: 1 
-## p-value: 0 
-## 
-## ====================
-## Variable: Fruits 
-## Chi-square: 421.6115 
-## df: 1 
-## p-value: 1.088121e-93 
-## 
-## ====================
-## Variable: Veggies 
-## Chi-square: 811.806 
-## df: 1 
-## p-value: 1.463029e-178 
-## 
-## ====================
-## Variable: HvyAlcoholConsump 
-## Chi-square: 825.1188 
-## df: 1 
-## p-value: 1.865932e-181 
-## 
-## ====================
-## Variable: AnyHealthcare 
-## Chi-square: 66.81237 
-## df: 1 
-## p-value: 2.986181e-16 
-## 
-## ====================
-## Variable: NoDocbcCost 
-## Chi-square: 250.3138 
-## df: 1 
-## p-value: 2.218395e-56 
-## 
-## ====================
-## Variable: DiffWalk 
-## Chi-square: 12092.32 
-## df: 1 
-## p-value: 0 
-## 
-## ====================
-## Variable: Sex 
-## Chi-square: 250.4137 
-## df: 1 
-## p-value: 2.109875e-56 
-## 
-## ====================
-## Variable: Age 
-## Chi-square: 8795.051 
-## df: 12 
-## p-value: 0 
-## 
-## ====================
-## Variable: Education 
-## Chi-square: 4027.112 
-## df: 5 
-## p-value: 0 
-## 
-## ====================
-## Variable: Income 
-## Chi-square: 7003.715 
-## df: 7 
-## p-value: 0</code></pre>
+chi_table &lt;- data.frame(
+  Variable   = names(chi_results),
+  Chi_square = sapply(chi_results, function(x) unname(x$statistic)),
+  df         = sapply(chi_results, function(x) unname(x$parameter)),
+  p_value    = sapply(chi_results, function(x) x$p.value)
+)
+
+chi_table$p_value &lt;- format(chi_table$p_value, scientific = TRUE) #show detailed p-value result
+
+kable(chi_table, digits = 4, row.names = FALSE, caption = &quot;Chi-square test results for categorical variables&quot;) #put everything neatly in a table</code></pre>
+<table>
+<caption>Chi-square test results for categorical variables</caption>
+<thead>
+<tr class="header">
+<th align="left">Variable</th>
+<th align="right">Chi_square</th>
+<th align="right">df</th>
+<th align="left">p_value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">HighBP</td>
+<td align="right">17562.4461</td>
+<td align="right">1</td>
+<td align="left">0.000000e+00</td>
+</tr>
+<tr class="even">
+<td align="left">HighChol</td>
+<td align="right">10174.0749</td>
+<td align="right">1</td>
+<td align="left">0.000000e+00</td>
+</tr>
+<tr class="odd">
+<td align="left">CholCheck</td>
+<td align="right">1062.9381</td>
+<td align="right">1</td>
+<td align="left">3.751399e-233</td>
+</tr>
+<tr class="even">
+<td align="left">Smoker</td>
+<td align="right">937.0558</td>
+<td align="right">1</td>
+<td align="left">8.640172e-206</td>
+</tr>
+<tr class="odd">
+<td align="left">Stroke</td>
+<td align="right">2838.9165</td>
+<td align="right">1</td>
+<td align="left">0.000000e+00</td>
+</tr>
+<tr class="even">
+<td align="left">HeartDiseaseorAttack</td>
+<td align="right">7971.1558</td>
+<td align="right">1</td>
+<td align="left">0.000000e+00</td>
+</tr>
+<tr class="odd">
+<td align="left">PhysActivity</td>
+<td align="right">3539.4194</td>
+<td align="right">1</td>
+<td align="left">0.000000e+00</td>
+</tr>
+<tr class="even">
+<td align="left">Fruits</td>
+<td align="right">421.6115</td>
+<td align="right">1</td>
+<td align="left">1.088121e-93</td>
+</tr>
+<tr class="odd">
+<td align="left">Veggies</td>
+<td align="right">811.8060</td>
+<td align="right">1</td>
+<td align="left">1.463029e-178</td>
+</tr>
+<tr class="even">
+<td align="left">HvyAlcoholConsump</td>
+<td align="right">825.1188</td>
+<td align="right">1</td>
+<td align="left">1.865932e-181</td>
+</tr>
+<tr class="odd">
+<td align="left">AnyHealthcare</td>
+<td align="right">66.8124</td>
+<td align="right">1</td>
+<td align="left">2.986181e-16</td>
+</tr>
+<tr class="even">
+<td align="left">NoDocbcCost</td>
+<td align="right">250.3138</td>
+<td align="right">1</td>
+<td align="left">2.218395e-56</td>
+</tr>
+<tr class="odd">
+<td align="left">DiffWalk</td>
+<td align="right">12092.3197</td>
+<td align="right">1</td>
+<td align="left">0.000000e+00</td>
+</tr>
+<tr class="even">
+<td align="left">Sex</td>
+<td align="right">250.4137</td>
+<td align="right">1</td>
+<td align="left">2.109875e-56</td>
+</tr>
+<tr class="odd">
+<td align="left">Age</td>
+<td align="right">8795.0506</td>
+<td align="right">12</td>
+<td align="left">0.000000e+00</td>
+</tr>
+<tr class="even">
+<td align="left">Education</td>
+<td align="right">4027.1123</td>
+<td align="right">5</td>
+<td align="left">0.000000e+00</td>
+</tr>
+<tr class="odd">
+<td align="left">Income</td>
+<td align="right">7003.7151</td>
+<td align="right">7</td>
+<td align="left">0.000000e+00</td>
+</tr>
+</tbody>
+</table>
 <div id="chi-square-test-result" class="section level2">
 <h2>Chi-square test result</h2>
 <p><strong>All categorical variables</strong> showed statistically
@@ -528,70 +547,84 @@ significant differences between diabetic and non-diabetic participants
 <h1>T-test for continuous variables</h1>
 <pre class="r"><code>cont_vars &lt;- c(&quot;BMI&quot;, &quot;MentHlth&quot;, &quot;PhysHlth&quot;, &quot;GenHlth&quot;)
 
-for (v in cont_vars) {
-  cat(&quot;\n==========================\n&quot;)
-  cat(&quot;Outcome:&quot;, v, &quot;\n&quot;)
-  print(t.test(chi_diabetes[[v]] ~ chi_diabetes$Diabetes_binary))
-}</code></pre>
-<pre><code>## 
-## ==========================
-## Outcome: BMI 
-## 
-##  Welch Two Sample t-test
-## 
-## data:  chi_diabetes[[v]] by chi_diabetes$Diabetes_binary
-## t = -99.92, df = 44093, p-value &lt; 2.2e-16
-## alternative hypothesis: true difference in means between group 0 and group 1 is not equal to 0
-## 95 percent confidence interval:
-##  -4.219416 -4.057065
-## sample estimates:
-## mean in group 0 mean in group 1 
-##        27.80577        31.94401 
-## 
-## 
-## ==========================
-## Outcome: MentHlth 
-## 
-##  Welch Two Sample t-test
-## 
-## data:  chi_diabetes[[v]] by chi_diabetes$Diabetes_binary
-## t = -29.695, df = 42872, p-value &lt; 2.2e-16
-## alternative hypothesis: true difference in means between group 0 and group 1 is not equal to 0
-## 95 percent confidence interval:
-##  -1.581710 -1.385835
-## sample estimates:
-## mean in group 0 mean in group 1 
-##        2.978034        4.461806 
-## 
-## 
-## ==========================
-## Outcome: PhysHlth 
-## 
-##  Welch Two Sample t-test
-## 
-## data:  chi_diabetes[[v]] by chi_diabetes$Diabetes_binary
-## t = -68.969, df = 41367, p-value &lt; 2.2e-16
-## alternative hypothesis: true difference in means between group 0 and group 1 is not equal to 0
-## 95 percent confidence interval:
-##  -4.435979 -4.190814
-## sample estimates:
-## mean in group 0 mean in group 1 
-##        3.641082        7.954479 
-## 
-## 
-## ==========================
-## Outcome: GenHlth 
-## 
-##  Welch Two Sample t-test
-## 
-## data:  chi_diabetes[[v]] by chi_diabetes$Diabetes_binary
-## t = -156.14, df = 47855, p-value &lt; 2.2e-16
-## alternative hypothesis: true difference in means between group 0 and group 1 is not equal to 0
-## 95 percent confidence interval:
-##  -0.9171656 -0.8944254
-## sample estimates:
-## mean in group 0 mean in group 1 
-##        2.385185        3.290981</code></pre>
+# Run t-tests and extract key results
+t_results &lt;- lapply(cont_vars, function(v) {
+  
+  tt &lt;- t.test(chi_diabetes[[v]] ~ chi_diabetes$Diabetes_binary)
+  
+  data.frame(
+    Variable        = v,
+    Mean_non_diab   = unname(tt$estimate[1]),
+    Mean_diab       = unname(tt$estimate[2]),
+    t_statistic     = unname(tt$statistic),
+    df              = unname(tt$parameter),
+    p_value         = tt$p.value
+  )
+})
+
+# Combine list rows into a data frame
+t_table &lt;- bind_rows(t_results)
+
+# Format values
+t_table &lt;- t_table |&gt;
+  mutate(
+    Mean_non_diab = round(Mean_non_diab, 2),
+    Mean_diab     = round(Mean_diab, 2),
+    t_statistic   = round(t_statistic, 2),
+    df            = round(df, 1),
+    p_value       = p_value)
+
+t_table$p_value &lt;- formatC(t_table$p_value, format = &quot;e&quot;, digits = 2)
+
+# Print table
+kable(t_table, caption = &quot;Summary of t-tests&quot;)</code></pre>
+<table>
+<caption>Summary of t-tests</caption>
+<thead>
+<tr class="header">
+<th align="left">Variable</th>
+<th align="right">Mean_non_diab</th>
+<th align="right">Mean_diab</th>
+<th align="right">t_statistic</th>
+<th align="right">df</th>
+<th align="left">p_value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">BMI</td>
+<td align="right">27.81</td>
+<td align="right">31.94</td>
+<td align="right">-99.92</td>
+<td align="right">44093.4</td>
+<td align="left">0.00e+00</td>
+</tr>
+<tr class="even">
+<td align="left">MentHlth</td>
+<td align="right">2.98</td>
+<td align="right">4.46</td>
+<td align="right">-29.69</td>
+<td align="right">42871.8</td>
+<td align="left">7.93e-192</td>
+</tr>
+<tr class="odd">
+<td align="left">PhysHlth</td>
+<td align="right">3.64</td>
+<td align="right">7.95</td>
+<td align="right">-68.97</td>
+<td align="right">41367.0</td>
+<td align="left">0.00e+00</td>
+</tr>
+<tr class="even">
+<td align="left">GenHlth</td>
+<td align="right">2.39</td>
+<td align="right">3.29</td>
+<td align="right">-156.14</td>
+<td align="right">47855.0</td>
+<td align="left">0.00e+00</td>
+</tr>
+</tbody>
+</table>
 <div id="t-test-result" class="section level2">
 <h2>T-test result</h2>
 <p>All tests showed <strong>highly significant differences</strong> (all
