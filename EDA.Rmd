@@ -188,45 +188,14 @@ ggplot(diabetes, aes(y = income, fill = diabetes_binary))+
 The proportional plot indicates an inverse relationship between income and diabetes prevalence. Individuals with lower income levels show a higher proportion of diabetes, whereas those with higher income levels have a noticeably lower diabetes proportion.
 
 
-```{r}
-# filtering prediabetes
-diabetes_nd = diabetes |>
-  filter(diabetes_012 != "Prediabetes") |>
-  droplevels()
-
-# long format
-binary_long_nd = diabetes_nd |>
-  select(diabetes_012, all_of(binary_vars)) |>
-  pivot_longer(
-    cols = all_of(binary_vars),
-    names_to = "variable",
-    values_to = "value"
-  )
-
-# proportion "Yes" in each group
-binary_yes_nd = binary_long_nd |>
-  filter(value == "Yes") |>
-  count(variable, diabetes_012) |>
-  group_by(variable) |>
-  mutate(prop = n / sum(n)) |>
-  ungroup()
-
-# proportion "No" in each group
-binary_no_nd = binary_long_nd |>
-  filter(value == "No") |>
-  count(variable, diabetes_012) |>
-  group_by(variable) |>
-  mutate(prop = n / sum(n)) |>
-  ungroup()
-```
 
 ## <b> Binary Variables</b>
 
 We started by splitting up the variables into three categories: binary variables, continuous variables and ordered categorical variables. Then, we compared all the variables within each category to diabetes. The binary variables are separated into three main parts: clinical conditions, lifestyle, and access to healthcare / function. 
 
-### 1) Clinical / Health Indicators 
+### 1) Clinical Conditions
 
-Clinical conditions include high blood pressure, high cholesterol, stroke, and a history of heart disease or heart attack. The bar chart shows the proportions of participants who reported each condition and whether they also have diabetes. 
+Clinical conditions include high blood pressure, high cholesterol, stroke, and a history of heart disease or heart attack. The chart below shows the proportions of participants who reported each condition and whether they also have diabetes. 
 
 ```{r}
 clinical_vars = c("high_bp", "high_chol", "stroke", "heart_diseaseor_attack")
@@ -235,7 +204,7 @@ diabetes_long =
   diabetes |> 
   pivot_longer(cols = all_of(clinical_vars),
                names_to = "variable",
-               values_to = "value")
+               values_to = "response")
 
 title_map = c(
   high_chol = "High Cholesterol Status",
@@ -246,165 +215,72 @@ title_map = c(
 
 col_names = names(title_map)
 
-
-ggplot(diabetes_long, aes(x = diabetes_binary, fill = value)) +
+p =
+  ggplot(diabetes_long, aes(x = diabetes_binary, fill = response)) +
   geom_bar(position = "fill", width = 0.7) +
-  facet_wrap(~ variable, ncol = 2, 
-             labeller = labeller(variable = title_map)) +
+  facet_wrap(
+    ~ variable, 
+    ncol = 2,
+    labeller = labeller(variable = title_map)
+  ) +
   labs(
-    title = "Clinical Condition Proportions by Diabetes Status",
+    title = "Clinical Condition by Diabetes Status",
     x = "Diabetes Status",
     y = "Proportion"
   ) +
   theme_minimal()
-```
 
-```{r}
-clinical_vars = c("high_bp", "high_chol", "stroke", "heart_diseaseor_attack")
+ggplotly(p)
 
-# answered yes
-p_clinical = binary_yes_nd |>
-  filter(variable %in% clinical_vars) |>
-  ggplot(aes(x = variable, y = prop, fill = diabetes_012)) +
-  geom_col(position = "dodge") +
-  scale_y_continuous(labels = scales::percent_format()) +
-  labs(
-    title = "Clinical Conditions: Proportion 'Yes' by Diabetes Status",
-    x = NULL,
-    y = "Proportion 'Yes'",
-    fill = "Diabetes status"
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1))
-
-
-ggplotly(p_clinical)
 
 ```
-
-Among those who answered 'yes,' a history of heart disease or heart attack has the highest proportion of diabetes at 33.9% (~0.339). In contrast, participants with high cholesterol have the highest proportion of not having diabetes.
-
-
-```{r}
-# answered no
-p_clinical_no = binary_no_nd |>
-  filter(variable %in% clinical_vars) |>
-  ggplot(aes(x = variable, y = prop, fill = diabetes_012)) +
-  geom_col(position = "dodge") +
-  scale_y_continuous(labels = scales::percent_format()) +
-  labs(
-    title = "Clinical Variables: Proportion 'No' by Diabetes Status",
-    x = NULL,
-    y = "Proportion 'No'",
-    fill = "Diabetes status"
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1))
-
-ggplotly(p_clinical_no)
-```
-
-This shows among those who answered 'no' to the clinical conditions, people who don’t have high blood pressure have the lowest proportion to have diabetes (~0.061). On the other hand, people who don’t have strokes have the highest proportion of having diabetes (~0.134).
+Among those who answered yes to each condition, people who have high blood pressure have the highest proportion of having diabetes (~0.738). Those who had stroke has the lowest proportion of having diabetes (~0.088).
 
 
-### 2) Lifestyle vs Diabetes
+### 2) Lifestyle Conditions
 
 The next category is lifestyle which include smoking, physical activity, fruits and vegetables intake, and heavy alcohol consumption. 
 ```{r}
 behavior_vars = c("smoker", "phys_activity", "fruits", "veggies", "hvy_alcohol_consump")
 
-# answered yes
-p_behavior = binary_yes_nd |>
-  filter(variable %in% behavior_vars) |>
-  ggplot(aes(x = variable, y = prop, fill = diabetes_012)) +
-  geom_col(position = "dodge") +
-  scale_y_continuous(labels = scales::percent_format()) +
-  labs(
-    title = "Lifestyle Behaviors: Proportion 'Yes' by Diabetes Status",
-    x = NULL,
-    y = "Proportion 'Yes'",
-    fill = "Diabetes status"
+behavior_long =
+  diabetes |> 
+  pivot_longer(
+    cols = all_of(behavior_vars),
+    names_to = "variable",
+    values_to = "response"
+  )
+
+behavior_title_map = c(
+  smoker = "Smoking Status",
+  phys_activity = "Physical Activity",
+  fruits = "Fruit Consumption",
+  veggies = "Vegetable Consumption",
+  hvy_alcohol_consump = "Heavy Alcohol Consumption"
+)
+
+p_behavior =
+  ggplot(behavior_long, aes(x = diabetes_binary, fill = response)) +
+  geom_bar(position = "fill", width = 0.7) +
+  facet_wrap(
+    ~ variable, 
+    ncol = 2,
+    labeller = labeller(variable = behavior_title_map)
   ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+  labs(
+    title = "Lifestyle Factor Proportions by Diabetes Status",
+    x = "Diabetes Status",
+    y = "Proportion"
+  ) +
+  theme_minimal()
 
-
+# make interactive
 ggplotly(p_behavior)
-
 ```
+Among those 
 
-Among those who answered 'yes' to these conditions, people who smoke have the highest proportion (~0.166) of having diabetes compared to rest variables. In contrast, people who have heavy alcohol consumption have the lowest proportion of people with diabetes (~0.059).
-
-```{r}
-
-# answered no
-p_behavior_no = binary_no_nd |>
-  filter(variable %in% behavior_vars) |>
-  ggplot(aes(x = variable, y = prop, fill = diabetes_012)) +
-  geom_col(position = "dodge") +
-  scale_y_continuous(labels = scales::percent_format()) +
-  labs(
-    title = "Lifestyle Behaviors: Proportion 'No' by Diabetes Status",
-    x = NULL,
-    y = "Proportion 'No'",
-    fill = "Diabetes status"
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1))
-
-ggplotly(p_behavior_no)
-
-```
-This shows among those who answered 'no' to the lifestyle habits, people who don’t do physical activities have the highest proportion of having diabetes (~0.217). Those who don't smoke have the lower proportion of having diabetes (~0.123).
-
-
-
-### 3) Healthcare Access and Function vs Diabetes
+### 3) Healthcare Access and Function 
 Lastly, the variables in healthcare access and function category include cholesterol check, health care coverage, health care affordability and difficulty walking.
-```{r}
-access_vars = c("chol_check", "any_healthcare", "no_docbc_cost", "diff_walk")
-
-p_access = binary_yes_nd |>
-  filter(variable %in% access_vars) |>
-  ggplot(aes(x = variable, y = prop, fill = diabetes_012)) +
-  geom_col(position = "dodge") +
-  scale_y_continuous(labels = scales::percent_format()) +
-  labs(
-    title = "Healthcare Access and Function: Proportion 'Yes' by Diabetes Status",
-    x = NULL,
-    y = "Proportion 'Yes'",
-    fill = "Diabetes status"
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1))
-
-ggplotly(p_access)
-
-```
-
-Among participants who answered ‘yes’ to these conditions, those who have difficulty walking have the highest proportion (~0.317) of having diabetes compared to the other variables. Those who have healthcare have the lowest proportion of having diabetes (~0.143).
-
-
-
-```{r}
-# answered no
-p_access_no = binary_no_nd |>
-  filter(variable %in% access_vars) |>
-  ggplot(aes(x = variable, y = prop, fill = diabetes_012)) +
-  geom_col(position = "dodge") +
-  scale_y_continuous(labels = scales::percent_format()) +
-  labs(
-    title = "Healthcare Access and Function: Proportion 'No' by Diabetes Status",
-    x = NULL,
-    y = "Proportion 'No'",
-    fill = "Diabetes status"
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1))
-
-ggplotly(p_access_no)
-```
-Among the participants who answered 'no,'those who have not experienced healthcare cost affordability issue have the highest proportion of having diabetes (~0.138). On the other hand, those who have not had a cholesterol check in the past five years have the lowest diabetes proportion (~0.026).
 
 ```{r}
 access_vars = c("chol_check", "any_healthcare", "no_docbc_cost", "diff_walk")
@@ -413,7 +289,7 @@ diabetes_long =
   diabetes |> 
   pivot_longer(cols = all_of(access_vars),
                names_to = "variable",
-               values_to = "value")
+               values_to = "response")
 
 title_map = c(
   chol_check = "Cholesterol check",
@@ -425,21 +301,28 @@ title_map = c(
 col_names = names(title_map)
 
 
-ggplot(diabetes_long, aes(x = diabetes_binary, fill = value)) +
-  geom_bar(position = "fill") +
-  facet_wrap(~ variable, ncol = 2, 
-             labeller = labeller(variable = title_map)) +
+p_access =
+  ggplot(diabetes_long, aes(x = diabetes_binary, fill = response)) +
+  geom_bar(position = "fill", width = 0.7) +
+  facet_wrap(
+    ~ variable,
+    ncol = 2,
+    labeller = labeller(variable = title_map)
+  ) +
   labs(
-    title = "Healthcare Access proportion by Diabetes Status",
+    title = "Healthcare Access Proportions by Diabetes Status",
     x = "Diabetes Status",
     y = "Proportion"
   ) +
   theme_minimal()
+
+# make it interactive
+ggplotly(p_access)
 ```
 
+Among those who answered yes to the conditions, people who have had cholesterol check in 5 years have the highest proportion of having diabetes (0.992).
 
-
-## <b> Continuous variables </b>
+## <b> Continuous Variables </b>
 
 In the dataset, we focus on Body Mass Index (BMI), mental health days, and physical health days. 
 
