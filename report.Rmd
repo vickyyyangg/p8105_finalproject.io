@@ -263,3 +263,253 @@ Similarly, the **t-test results** show that all continuous variables have extrem
 ### Discussion: 
  
 In general, all characteristics show significant differences between individuals with and without diabetes. This aligns with expectations, as many health and demographic factors, such as blood pressure, cholesterol, physical activity, age, and income, are known to be associated with diabetes risk. One thing that we didn’t expect is that many p-values are extremely small, indicating exceptionally strong group differences. This suggests that the predictors in this dataset have very strong associations with diabetes status, much stronger than what might typically be observed in population-level studies. Overall, these results highlight clear disparities in health behaviors, health status, and demographic characteristics between diabetic and non-diabetic individuals, providing insight into the underlying factors that may contribute to diabetes risk.
+
+
+
+## Prediction Models
+
+This analysis evaluated multiple machine learning and statistical models to predict diabetes using a large population health survey dataset containing demographic, lifestyle, and cardiometabolic variables. Two modeling frameworks were examined:
+
+1. **Multinomial classification**  
+   - No Diabetes  
+   - Prediabetes  
+   - Diabetes  
+
+2. **Binary classification**  
+   - No Diabetes  
+   - Diabetes  
+
+Model performance differed substantially across approaches, with binary models consistently outperforming the multinomial logistic regression model. This report summarizes results for all models, explains why binary modeling performs better for this dataset, and compares three binary classifiers: logistic regression, random forest, and XGBoost.
+
+---
+
+# 1. Multinomial Logistic Regression (Three-Class Model)
+
+A multinomial logistic regression model was used to classify individuals into *No Diabetes*, *Prediabetes*, and *Diabetes*.
+
+## 1.1 Model Performance
+
+The model performed poorly, especially for the prediabetes category.
+
+- **Prediabetes cases correctly identified:** 84 out of 926  
+- **Macro F1 score:** ~0.395  
+- **Accuracy:** ~0.848  
+- **Macro AUC:** ~0.7009
+
+Although accuracy appears high, this is misleading due to substantial class imbalance (the majority class is *No Diabetes*).
+
+```{r}
+knitr::include_graphics("prediction_images/multi_heatmap.png")
+knitr::include_graphics("prediction_images/multi_roc.png")
+```
+
+## 1.2 Interpretation
+
+- The prediabetes category was frequently misclassified as either No Diabetes or Diabetes.
+- Features in the dataset do not separate cleanly into three clinically distinct groups.
+- The multinomial model struggled with class imbalance and overlapping biological markers, making it low-performing overall.
+
+---
+
+# 2. Why Binary Models Outperform Multinomial Models
+
+## 2.1 Prediabetes Is Not a Statistically Distinct Class
+
+Prediabetes shares clinical markers with both normal and diabetic groups.  
+Thus:
+
+- Strong overlap between features  
+- No clear decision boundary  
+- Classification becomes unstable  
+
+## 2.2 Severe Class Imbalance
+
+“No Diabetes” represents the majority of the dataset.  
+Multinomial models:
+
+- Favor majority classes  
+- Struggle to learn minority patterns  
+- Produce poor recall for prediabetes
+
+Binary classification substantially reduces imbalance issues.
+
+## 2.3 Simplified Decision Boundary
+
+Binary classification requires distinguishing:
+
+- **Disease vs No Disease**
+
+This simplifies the task, increases stability, and improves performance.
+
+## 2.4 Tree-Based Models Excel in Binary Settings
+
+Random Forest and XGBoost:
+
+- Capture nonlinearities  
+- Handle interactions automatically  
+- Are robust to noise and imbalance  
+
+These strengths are more effective when predicting two classes instead of three.
+
+**Conclusion:**  
+The prediabetes class is not well-defined in the dataset, making multinomial models unstable and inaccurate. Binary modeling produces more practical and reliable results.
+
+---
+
+# 3. Binary Logistic Regression
+
+A binary logistic regression model was fitted using cardiometabolic and lifestyle predictors.
+
+## 3.1 Significant Predictors
+
+- High blood pressure (OR = 2.54, 95% CI: 2.48–2.61)  
+- High cholesterol (OR = 1.97, 95% CI: 1.92–2.02)  
+- BMI (OR ≈ 1.075 per unit)  
+- Smoking (OR = 1.12)  
+- Physical activity (OR = 0.70; protective)  
+- Male sex (OR = 1.15)
+- Polynomial age terms: significant nonlinear age–risk relationship
+
+## 3.2 Model Performance
+
+- **True negatives:** 210,761  
+- **False positives:** 2,942  
+- **False negatives:** 36,471  
+- **True positives:** 3,506  
+- **AUC:** 0.7845  
+
+```{r}
+knitr::include_graphics("prediction_images/binary_log_roc.png")
+```
+
+## 3.3 Interpretation
+
+- High specificity but poor sensitivity  
+- Misses many diabetes cases  
+- Useful for interpretability, less effective for prediction  
+
+---
+
+# 4. Binary Random Forest (Ranger)
+
+A random forest classifier was applied to the binary diabetes outcome.
+
+## 4.1 Confusion Matrix
+
+- **True positives:** 6,513  
+- **False negatives:** 1,482  
+- **True negatives:** 41,759  
+- **False positives:** 981  
+
+## 4.2 Performance Metrics
+
+- **Accuracy:** 0.8523  
+- **Macro F1:** 0.9177  
+- **ROC AUC:** 0.8195  
+
+```{r}
+knitr::include_graphics("prediction_images/randomF_heatmap.png")
+knitr::include_graphics("prediction_images/randomF_roc.png")
+```
+
+## 4.3 Interpretation
+
+- Strong balanced performance  
+- Handles nonlinear relationships well  
+- Major improvement over multinomial model  
+- Robust to class imbalance  
+
+```{r} 
+knitr::include_graphics("prediction_images/var_importance_randomF.png")
+```
+---
+
+# 5. XGBoost Model
+
+An XGBoost classifier was trained with depth-4 trees, learning rate 0.1, and subsampling.
+
+## 5.1 Performance
+
+- **Accuracy:** 1.00  
+- **Sensitivity:** 1.00  
+- **Specificity:** 1.00  
+- **AUC:** 1.00  
+
+```{r}
+knitr::include_graphics("prediction_images/xgb_importance.png")
+```
+
+## 5.2 Interpretation
+
+XGBoost achieved perfect discrimination on the test dataset.
+
+- Indicates extremely strong predictive power  
+- May suggest some degree of overfitting  
+- Further cross-validation is recommended  
+
+---
+
+# 6. Comparison of Binary Models
+
+| Model | Accuracy | Macro F1 | AUC | Strengths | Weaknesses |
+|------|----------|----------|-----|-----------|------------|
+| **Binary Logistic Regression** | Moderate | Low–Moderate | 0.7845 | Interpretable | Poor sensitivity; linear assumptions |
+| **Random Forest** | 0.8523 | 0.9177 | 0.8195 | Strong balanced performance | Less interpretable |
+| **XGBoost** | 1.00 | 1.00 | 1.00 | Outstanding predictive ability | Possible overfitting |
+
+---
+
+# 7. Overall Conclusion
+
+The multinomial logistic regression model performed poorly due to overlapping class distributions, substantial class imbalance, and the inherent difficulty of distinguishing prediabetes. Its macro F1 score of ~0.395 and low prediabetes recall demonstrate that it is not suitable for multi-class diabetes prediction in this dataset.
+
+Binary models performed substantially better:
+
+- **XGBoost** produced perfect discrimination.  
+- **Random Forest** achieved excellent balanced accuracy and F1 scores.  
+- **Logistic Regression** was interpretable but had weaker predictive performance.
+
+**Overall, binary classification is the preferred approach** because it simplifies the prediction task, improves class balance, and yields more clinically meaningful results.
+
+---
+
+# 8. Discussion
+
+The results highlight the trade-offs between **interpretability** and **predictive performance**:
+
+1. **Model choice depends on the goal:**  
+   - Logistic regression is interpretable and allows clinicians to understand the influence of risk factors (ORs), but predictive power is limited.  
+   - Random Forest and XGBoost provide strong prediction, capture non-linear relationships, and handle interactions, but are less interpretable.
+
+2. **Binary vs Multinomial Classification:**  
+   - Collapsing prediabetes and diabetes into a single “disease” category improved model stability and predictive accuracy.  
+   - Multinomial models struggle with small, overlapping classes and class imbalance.
+
+3. **Clinical implications:**  
+   - Tree-based models like Random Forest and XGBoost can be valuable for **screening tools** or **risk prediction systems**.  
+   - Logistic regression remains useful for identifying **modifiable risk factors** and understanding the population-level relationships.
+
+4. **Limitations:**  
+   - XGBoost may overfit despite high test performance; cross-validation or external validation is needed.  
+   - Models rely on observed predictors; unmeasured confounding factors may influence diabetes risk.  
+   - The dataset is survey-based and heterogeneous; care is needed when generalizing to other populations.
+
+5. **Future directions and hyperparameter tuning:**  
+   - Combine interpretable models with high-performing algorithms (e.g., SHAP values with XGBoost) to balance prediction and explanation.  
+   - Explore more sophisticated methods to identify and model the prediabetes subgroup (neural networks).
+
+   - Future work could include **hyperparameter tuning** to further improve model performance.  
+   - For **Random Forest**, key parameters to tune include:
+     - Number of trees (`num.trees`)  
+     - Number of variables considered at each split (`mtry`)  
+     - Minimum node size (`min.node.size`)  
+   - For **XGBoost**, important parameters include:
+     - Learning rate (`eta`)  
+     - Maximum tree depth (`max_depth`)  
+     - Subsample and column sampling fractions (`subsample`, `colsample_bytree`)  
+     - Regularization parameters (`lambda`, `alpha`)  
+   - Tuning can be performed using **cross-validation**, grid search, or randomized search, optimizing metrics like **macro F1** or **AUC**.  
+   - Hyperparameter tuning balances model complexity and generalizability, potentially improving predictive power without overfitting.
+
+**In summary,** binary models—particularly Random Forest and XGBoost—offer reliable prediction for diabetes, while logistic regression provides complementary insight into underlying risk factors. Incorporating hyperparameter tuning in future analyses could further enhance model performance and stability.
+
