@@ -1,0 +1,160 @@
+---
+title: "Exploring Diabetes Risk Factors and Predictive Modeling in the United States"
+output:
+  html_document:
+    self_contained: false
+    code_folding: hide
+    toc: true
+    toc_float: true
+    theme: cosmo
+
+---
+
+*Yvonne Xie, Rosie Kwon, Vicky Yang, Yiying Chen, Charlotte Zhang*
+
+
+## Introduction
+```{r child="introduction.Rmd"}
+```
+
+## Data
+```{r child="Data.Rmd"}
+```
+
+## Exploratory Data Analysis
+
+```{r, include = FALSE, message = FALSE, warning = FALSE}
+# Load required libraries
+library(tidyverse)
+library(rvest)
+library(plotly)
+
+diabetes <- readRDS("clean_diabetes_data.rds")
+  
+binary_vars = c(
+  "high_bp", "high_chol", "chol_check",
+  "smoker", "stroke", "heart_diseaseor_attack",
+  "phys_activity", "hvy_alcohol_consump", "any_healthcare",
+  "no_docbc_cost", "diff_walk", "fruits", "veggies"
+)
+```
+
+
+## <b>Diabetes Status Overview </b>
+
+To begin the analysis, we examine how diabetes variable is distributed across the three diagnostic categories.
+
+Because prediabetes accounts for a very small proportion of the sample, and because both diabetes and prediabetes represent elevated metabolic risk, we combined these two categories into a single “at-risk” group. 
+```{r}
+diabetes =
+  diabetes |> 
+  mutate(
+    diabetes_binary = 
+      factor(diabetes_2,
+             levels = c(0,1),
+             labels = c("No Diabetes", "Diabetes")),
+  )
+
+diabetes |>  
+  count(diabetes_binary) |>  
+  mutate(
+    percent = round(n / sum(n) * 100, 1)
+  ) |> 
+  ggplot(aes(x = diabetes_binary, y = n, fill = diabetes_binary)) +
+  geom_col() +
+  geom_text(aes(label = paste0(percent, "%"),vjust = -0.2), 
+  ) +
+  scale_fill_manual(
+  values = c(
+    "No Diabetes" = "skyblue",
+    "Diabetes" = "tomato"
+    )
+  ) +
+  labs(
+    title = "Diabetes distribution",
+    x = "Diabetes Category",
+    y = "Count"
+  ) +
+  theme_minimal()
+```
+
+The 84.2% of population in the dataset do not have diabetes while 15.6% reported having Diabetes. Although diabetes affects a smaller portion of the sample, it still represents a substantial public health concern given the large population size.
+
+
+## <b>Demographic Characteristics & Diabetes Patterns </b>
+
+We examined the demographic structure of the BRFSS sample dataset, including age, sex, education, income, and general health.
+
+Understanding population characteristics provides important context for interpreting diabetes prevalence and identifying meaningful risk patterns.
+
+### 1) Sex & Age
+
+```{r error = FALSE}
+diabetes |>
+  group_by(age, sex) |> 
+  summarize(
+    diabetes_rate = mean(diabetes_2 == 1)) |>  
+  plot_ly(
+    x = ~age,
+    y = ~diabetes_rate,
+    color = ~sex,
+    colors = c("tomato","skyblue"),
+    type = "scatter",
+    mode = "markers"
+  ) |>  
+  layout(
+    title = "Diabetes prevalence by Sex and Age Group",
+    xaxis = list(title = "Age Group"),
+    yaxis = list(title = "Diabetes Rate")
+  )
+```
+
+Diabetes prevalence increases steadily with age for both males and females. The rate of diabetes increases rapidly from 40s and peak at aged 70-74. Prevalence of diabetes is higher in male compared to female across all age groups, indicating that a sex-specific pattern in diabetes risk that becomes more pronounced with age. 
+
+### 2) Education 
+
+In order to compare diabetes risk across education levels, a proportional plot was used since the large differences in group sizes can mask prevalence differences. 
+
+```{r}
+ggplot(diabetes, aes(y = education, fill = diabetes_binary)) +
+  geom_bar(position = "fill") +
+  scale_fill_manual(values = c(
+    "No Diabetes" = "lightgreen",
+    "Diabetes" = "salmon"
+  )) +
+  scale_x_continuous(labels = scales::percent_format()) +
+  labs(
+    title = "Proportion of Diabetes Status by Education Level",
+    x = "Proportion",
+    y = "Education Level",
+    fill = "Diabetes Status"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(hjust = 1))
+```
+
+The proportional plot indicates that the distribution of diabetes status is relatively consistent across education levels. There is  gradient suggesting that lower educational attainment is slightly more associated with markedly different diabetes prevalence.
+
+### 3) Income
+
+Even though the number of diabetes cases appears visually similar across income levels, we used a proportional plot for income variable as there are large differences in total sample size between income groups..
+
+```{r}
+ggplot(diabetes, aes(y = income, fill = diabetes_binary))+
+  geom_bar(position = "fill") +
+  scale_fill_manual(values = c(
+    "No Diabetes" = "lightgreen",
+    "Diabetes" = "salmon"
+  )) +
+  scale_x_continuous(labels = scales::percent_format()) +
+  labs(
+    title = "Proportion of Diabetes Status by Income Level",
+    x = "Proportion",
+    y = "Income Level",
+    fill = "Diabetes Status"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(hjust = 1))
+```
+
+The proportional plot indicates an inverse relationship between income and diabetes prevalence. Individuals with lower income levels show a higher proportion of diabetes, whereas those with higher income levels have a noticeably lower diabetes proportion.
