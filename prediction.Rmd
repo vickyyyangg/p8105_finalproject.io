@@ -20,7 +20,7 @@ library(pROC)
 library(ranger)
 ```
 
-# Model 1 Preparation 
+## Model 1 Preparation 
 ```{r}
 df_multilog <- diabetes |>
   select(diabetes_012, high_bp, high_chol, chol_check, bmi, smoker, stroke, 
@@ -30,9 +30,7 @@ df_multilog <- diabetes |>
 df_multilog
 ```
 
-
-
-train/test split
+### train/test split
 ```{r}
 # using createDataPartition because diabetes_012 is unbalanced based on EDA.
 train_test_split <- createDataPartition(df_multilog$diabetes_012, p = 0.8, list = FALSE)
@@ -42,7 +40,7 @@ test  <- df_multilog[-train_test_split, ]
 y_test <- test$diabetes_012
 ```
 
-F1 function for multiclass
+### F1 function for multiclass
 ```{r}
 multi_f1 <- function(true, pred) {
   # Convert to factors
@@ -78,7 +76,7 @@ multi_f1 <- function(true, pred) {
 
 
 
-# Model 1: Multinomial Logistic Regression
+## Model 1: Multinomial Logistic Regression
 ```{r}
 model1 <- multinom(diabetes_012 ~ ., data = train, trace = FALSE)
 ```
@@ -97,7 +95,7 @@ model1__macro_auc <- as.numeric(multiclass.roc(response = y_test, predictor = mo
 cat("Macro AUC is:", model1__macro_auc, "\n")
 ```
 
-ROC
+### 1.1 ROC
 ```{r}
 cols <- c("blue", "green", "pink")
 
@@ -124,7 +122,7 @@ legend("bottomright",
        lwd = c(rep(2, 3), rep(NA, 3)))
 ```
 
-Confusion matrix heatmap
+### 1.2 Confusion matrix heatmap
 ```{r}
 model1_cm <- table(True = y_test, Pred = model1_pred)
 model1_cm_df <- as.data.frame(model1_cm) |>
@@ -140,7 +138,7 @@ ggplot(model1_cm_df, aes(x = Predicted, y = True, fill = Count)) +
 
 
 
-# Model 2 Preparation
+## Model 2 Preparation
 ```{r}
 df_ranger <- diabetes |>
   select(diabetes_2, high_bp, high_chol, chol_check, bmi, smoker, stroke, 
@@ -154,8 +152,8 @@ df_ranger$diabetes_2 <- factor(df_ranger$diabetes_2,
 df_ranger
 ```
 
-# Model 2: Binary Ranger/RandomForest Model
-Data splitting
+## Model 2: Binary Ranger/RandomForest Model
+### 2.1 Data splitting
 ```{r}
 set.seed(1) 
 
@@ -167,7 +165,7 @@ y_test <- test_data$diabetes_2
 ```
 
 
-Train Binary Random Forest Model (using ranger)
+### 2.2 Train Binary Random Forest Model (using ranger)
 ```{r}
 rf_model <- ranger(
   dependent.variable.name = "diabetes_2", 
@@ -180,7 +178,7 @@ rf_model <- ranger(
 )
 ```
 
-Prediction and Metrics
+### 2.3 Prediction and Metrics
 ```{r}
 pred <- predict(rf_model, data = test_data, type = "response")
 
@@ -214,7 +212,7 @@ cat("Macro F1 score is:", round(model_macro_f1, 4), "\n")
 cat("ROC AUC (Binary) is:", round(model_auc, 4), "\n")
 ```
 
-Confusion matrix heatmap
+### 2.4 Confusion matrix heatmap
 ```{r}
 model_cm_table <- cm$table
 
@@ -236,7 +234,7 @@ p_heatmap <- ggplot(model_cm_df, aes(x = Predicted, y = True, fill = Count)) +
 print(p_heatmap)
 ```
 
-ROC curve
+### 2.5 ROC curve
 ```{r}
 plot(model_roc, 
      col = "darkred", 
@@ -257,7 +255,7 @@ legend(
 )
 ```
 
-Variable importance
+### 2.6 Variable importance
 ```{r}
 importance_df <- data.frame(
   Variable = names(rf_model$variable.importance),

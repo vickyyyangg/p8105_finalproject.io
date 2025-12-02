@@ -189,13 +189,11 @@ The proportional plot indicates an inverse relationship between income and diabe
 
 
 
-## <b> Binary Variables</b>
+The variables are separated into three main parts: clinical conditions, lifestyle, and access to healthcare / function. 
 
-We started by splitting up the variables into three categories: binary variables, continuous variables and ordered categorical variables. Then, we compared all the variables within each category to diabetes. The binary variables are separated into three main parts: clinical conditions, lifestyle, and access to healthcare / function. 
+## <b>Clinical Conditions</b>
 
-### 1) Clinical Conditions
-
-Clinical conditions include high blood pressure, high cholesterol, stroke, and a history of heart disease or heart attack. The chart below shows the proportions of participants who reported each condition and whether they also have diabetes. 
+Clinical conditions include high blood pressure, high cholesterol, history of stroke, and a history of heart disease or heart attack. The chart below shows the proportions of participants who reported each condition and whether they also have diabetes. 
 
 ```{r}
 clinical_vars = c("high_bp", "high_chol", "stroke", "heart_diseaseor_attack")
@@ -209,7 +207,7 @@ diabetes_long =
 title_map = c(
   high_chol = "High Cholesterol Status",
   high_bp = "High Blood Pressure",
-  stroke = "Stroke",
+  stroke = "History of Stroke",
   heart_diseaseor_attack = "Heart Disease or Attack"
 )
 
@@ -234,10 +232,10 @@ ggplotly(p)
 
 
 ```
-Among those who answered yes to each condition, people who have high blood pressure have the highest proportion of having diabetes (~0.738). Those who had stroke has the lowest proportion of having diabetes (~0.088).
+The proportions show that there is a strong relationship between each clinical condition and diabetes status. For individuals who reported having a specific condition, the proportion with diabetes is significantly higher than the proportion without diabetes. Among these conditions, high blood pressure is associated with the highest proportion of diabetes, at approximately 0.738. Conversely, a history of stroke is linked to the lowest observed proportion, at about 0.088.
 
 
-### 2) Lifestyle Conditions
+## <b>Lifestyle Conditions</b>
 
 The next category is lifestyle which include smoking, physical activity, fruits and vegetables intake, and heavy alcohol consumption. 
 ```{r}
@@ -268,7 +266,7 @@ p_behavior =
     labeller = labeller(variable = behavior_title_map)
   ) +
   labs(
-    title = "Lifestyle Factor Proportions by Diabetes Status",
+    title = "Lifestyle Factor by Diabetes Status",
     x = "Diabetes Status",
     y = "Proportion"
   ) +
@@ -277,9 +275,9 @@ p_behavior =
 # make interactive
 ggplotly(p_behavior)
 ```
-Among those 
+The proportions show minimal differences between individuals with and without diabetes across these variables. This suggests that lifestyle condition variables have little influence on the likelihood of having diabetes.
 
-### 3) Healthcare Access and Function 
+## <b>Healthcare Access and Function</b>
 Lastly, the variables in healthcare access and function category include cholesterol check, health care coverage, health care affordability and difficulty walking.
 
 ```{r}
@@ -310,7 +308,7 @@ p_access =
     labeller = labeller(variable = title_map)
   ) +
   labs(
-    title = "Healthcare Access Proportions by Diabetes Status",
+    title = "Healthcare Access by Diabetes Status",
     x = "Diabetes Status",
     y = "Proportion"
   ) +
@@ -320,7 +318,7 @@ p_access =
 ggplotly(p_access)
 ```
 
-Among those who answered yes to the conditions, people who have had cholesterol check in 5 years have the highest proportion of having diabetes (0.992).
+When comparing the proportions across variables, only difficulty walking demonstrates a notable difference between individuals with and without diabetes. This indicates that difficulty walking is the only variable that shows a strong association with diabetes status. 
 
 ## <b> Continuous Variables </b>
 
