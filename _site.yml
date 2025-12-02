@@ -17,7 +17,7 @@ navbar:
       href: prediction.html
     - text: "Analysis"
       href: logistic_regression_xgboost.html
-    - text: "characteristics"
+    - text: "Characteristics"
       href: chi_test.html
     - text: "Discussion"
       href: discussion.html
