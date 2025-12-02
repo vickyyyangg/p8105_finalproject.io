@@ -188,6 +188,31 @@ ggplot(diabetes, aes(y = income, fill = diabetes_binary))+
 The proportional plot indicates an inverse relationship between income and diabetes prevalence. Individuals with lower income levels show a higher proportion of diabetes, whereas those with higher income levels have a noticeably lower diabetes proportion.
 
 
+### 4) BMI 
+
+The mean BMI is `r round(mean(diabetes$bmi),3)` which falls within the overweight category. 
+
+```{r}
+diabetes |> 
+  plot_ly(
+    x = ~diabetes_binary,
+    y = ~bmi,
+    type = "violin",
+    color = ~diabetes_binary,
+    colors = c("skyblue","tomato"),
+    box = list(visible = TRUE),
+    meanline = list(visible = TRUE)
+  ) |> 
+  layout(
+    title = "BMI Distribution by Diabetes Status",
+    xaxis = list(title = "Diabetes Status"),
+    yaxis = list(title = "BMI")
+  )
+
+```
+
+Individuals with diabetes (median = 31.8) have noticeably higher BMI values compared to those without diabetes (median = 27.7). The pattern is consistent with established clinical evidence that higher BMI is a major risk factor for diabetes.
+
 
 The variables are separated into three main parts: clinical conditions, lifestyle, and access to healthcare / function. 
 
@@ -233,6 +258,125 @@ ggplotly(p)
 
 ```
 The proportions show that there is a strong relationship between each clinical condition and diabetes status. For individuals who reported having a specific condition, the proportion with diabetes is significantly higher than the proportion without diabetes. Among these conditions, high blood pressure is associated with the highest proportion of diabetes, at approximately 0.738. Conversely, a history of stroke is linked to the lowest observed proportion, at about 0.088.
+
+* Mental Health 
+
+The mean of the number of days in the past month during which an individual reported poor mental health is `r round(mean(diabetes$ment_hlth),3)`.
+
+
+```{r,error=FALSE}
+diabetes |> 
+  ggplot(aes(x = ment_hlth))+
+  geom_histogram()
+```
+
+Most of participants reported 0 mentally unhealthy days with a steep decline in frequency as the number of days increases. Only a relatively small portion of respondents reported persistent mental distress approaching the upper bound of the scale (20–30 days). 
+
+
+```{r}
+diabetes = 
+  diabetes |> 
+  mutate(
+    mental = case_when(
+      ment_hlth == 0 ~ "0 days",
+      ment_hlth >= 1 & ment_hlth <= 13 ~ "1-13 days",
+      ment_hlth >= 14 ~ "14+ days"
+    ),
+    mental = factor(mental, levels = c("0 days", "1-13 days", "14+ days"))
+  )
+
+```
+
+According to the CDC, an individual has frequent mental distress when they feel emotionally unhealthy, or very sad, anxious, or troubled, for at least 14 out of 30 days. Following this guideline, we categorized `ment_hlth` variable into 3 different levels : 0 days, 1-13 days, and 14+ days.
+
+```{r}
+diabetes |> 
+  ggplot(aes(x = mental, fill = diabetes_binary)) +
+  geom_bar(position = "dodge") +
+  scale_fill_manual(values = c(
+    "No Diabetes" = "lightgreen",
+    "Diabetes" = "salmon"
+  )) +
+  labs(
+    title = "Distribution of Mentally Unhealthy Days by Diabetes Status",
+    x = "Mental Health (Last 30 Days)",
+    y = "Count",
+    fill = "Diabetes Status"
+  ) +
+  theme_minimal()
+
+```
+
+```{r}
+mental_table =
+  diabetes |> 
+  count(mental, diabetes_binary) |> 
+  group_by(mental) |> 
+  mutate(
+    prop = round(n / sum(n) * 100, 1)
+  ) |> 
+  select(Mental = mental, Diabetes_Status = diabetes_binary, Count = n, Proportion = prop) 
+
+knitr::kable(mental_table)
+```
+
+The counts of mentally unhealthy days are higher among non-diabetes due to the large sample size. However, by looking at the proportion of diabetes for each categories of mental health, the proportion of individuals reporting frequent mental distress (23.7%) is higher among those with diabetes.   
+
+* Physical Health
+
+```{r}
+diabetes |> 
+  ggplot(aes(x = phys_hlth)) +
+  geom_histogram()
+```
+
+Like the mental health measure, the physical health variable is heavily skewed towards 0 days. Based on CDC guideline, individuals experiencing 14 or more physically unhealthy days in the past 30 days are defined as having frequent physical distress. We categorized the `phys_hlth` variable into 3 levels : 0 days, 1-13 days, and 14+ days. 
+
+```{r}
+diabetes = 
+  diabetes |> 
+  mutate(
+    physical = case_when(
+      phys_hlth == 0 ~ "0 days",
+      phys_hlth >= 1 & phys_hlth <= 13 ~ "1-13 days",
+      phys_hlth >= 14 ~ "14+ days"
+    ),
+    mental = factor(mental, levels = c("0 days", "1-13 days", "14+ days"))
+  )
+```
+
+
+```{r}
+diabetes |> 
+  ggplot(aes(x = physical, fill = diabetes_binary)) +
+  geom_bar(position = "dodge") +
+  scale_fill_manual(values = c(
+    "No Diabetes" = "lightgreen",
+    "Diabetes" = "salmon"
+  )) +
+  labs(
+    title = "Distribution of Mentally Unhealthy Days by Diabetes Status",
+    x = "physical Health (Last 30 Days)",
+    y = "Count",
+    fill = "Diabetes Status"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+physical_table =
+  diabetes |> 
+  count(physical, diabetes_binary) |> 
+  group_by(physical) |> 
+  mutate(
+    prop = round(n / sum(n) * 100, 1)
+  ) |> 
+  select(Physical = physical, Diabetes_Status = diabetes_binary, Count = n, Proportion = prop) 
+
+knitr::kable(physical_table)
+```
+
+Individuals with diabetes show a higher count in both the 1–13 days and 14+ days categories than would be expected relative to the non-diabetic group, with 17.4% and 30.6%, respectively.
 
 
 ## <b>Lifestyle Conditions</b>
@@ -320,150 +464,5 @@ ggplotly(p_access)
 
 When comparing the proportions across variables, only difficulty walking demonstrates a notable difference between individuals with and without diabetes. This indicates that difficulty walking is the only variable that shows a strong association with diabetes status. 
 
-## <b> Continuous Variables </b>
-
-In the dataset, we focus on Body Mass Index (BMI), mental health days, and physical health days. 
-
-### 1) BMI 
-
-The mean BMI is `r round(mean(diabetes$bmi),3)` which falls within the overweight category. 
-
-```{r}
-diabetes |> 
-  plot_ly(
-    x = ~diabetes_binary,
-    y = ~bmi,
-    type = "violin",
-    color = ~diabetes_binary,
-    colors = c("skyblue","tomato"),
-    box = list(visible = TRUE),
-    meanline = list(visible = TRUE)
-  ) |> 
-  layout(
-    title = "BMI Distribution by Diabetes Status",
-    xaxis = list(title = "Diabetes Status"),
-    yaxis = list(title = "BMI")
-  )
-
-```
-
-Individuals with diabetes (median = 31.8) have noticeably higher BMI values compared to those without diabetes (median = 27.7). The pattern is consistent with established clinical evidence that higher BMI is a major risk factor for diabetes.
-
-### 2) Mental Health 
-
-The mean of the number of days in the past month during which an individual reported poor mental health is `r round(mean(diabetes$ment_hlth),3)`.
 
 
-```{r,error=FALSE}
-diabetes |> 
-  ggplot(aes(x = ment_hlth))+
-  geom_histogram()
-```
-
-Most of participants reported 0 mentally unhealthy days with a steep decline in frequency as the number of days increases. Only a relatively small portion of respondents reported persistent mental distress approaching the upper bound of the scale (20–30 days). 
-
-
-```{r}
-diabetes = 
-  diabetes |> 
-  mutate(
-    mental = case_when(
-      ment_hlth == 0 ~ "0 days",
-      ment_hlth >= 1 & ment_hlth <= 13 ~ "1-13 days",
-      ment_hlth >= 14 ~ "14+ days"
-    ),
-    mental = factor(mental, levels = c("0 days", "1-13 days", "14+ days"))
-  )
-
-```
-
-According to the CDC, an individual has frequent mental distress when they feel emotionally unhealthy, or very sad, anxious, or troubled, for at least 14 out of 30 days. Following this guideline, we categorized `ment_hlth` variable into 3 different levels : 0 days, 1-13 days, and 14+ days.
-
-```{r}
-diabetes |> 
-  ggplot(aes(x = mental, fill = diabetes_binary)) +
-  geom_bar(position = "dodge") +
-  scale_fill_manual(values = c(
-    "No Diabetes" = "lightgreen",
-    "Diabetes" = "salmon"
-  )) +
-  labs(
-    title = "Distribution of Mentally Unhealthy Days by Diabetes Status",
-    x = "Mental Health (Last 30 Days)",
-    y = "Count",
-    fill = "Diabetes Status"
-  ) +
-  theme_minimal()
-
-```
-
-```{r}
-mental_table =
-  diabetes |> 
-  count(mental, diabetes_binary) |> 
-  group_by(mental) |> 
-  mutate(
-    prop = round(n / sum(n) * 100, 1)
-  ) |> 
-  select(Mental = mental, Diabetes_Status = diabetes_binary, Count = n, Proportion = prop) 
-
-knitr::kable(mental_table)
-```
-
-The counts of mentally unhealthy days are higher among non-diabetes due to the large sample size. However, by looking at the proportion of diabetes for each categories of mental health, the proportion of individuals reporting frequent mental distress (23.7%) is higher among those with diabetes.   
-
-### 3) Physical Health
-
-```{r}
-diabetes |> 
-  ggplot(aes(x = phys_hlth)) +
-  geom_histogram()
-```
-
-Like the mental health measure, the physical health variable is heavily skewed towards 0 days. Based on CDC guideline, individuals experiencing 14 or more physically unhealthy days in the past 30 days are defined as having frequent physical distress. We categorized the `phys_hlth` variable into 3 levels : 0 days, 1-13 days, and 14+ days. 
-
-```{r}
-diabetes = 
-  diabetes |> 
-  mutate(
-    physical = case_when(
-      phys_hlth == 0 ~ "0 days",
-      phys_hlth >= 1 & phys_hlth <= 13 ~ "1-13 days",
-      phys_hlth >= 14 ~ "14+ days"
-    ),
-    mental = factor(mental, levels = c("0 days", "1-13 days", "14+ days"))
-  )
-```
-
-
-```{r}
-diabetes |> 
-  ggplot(aes(x = physical, fill = diabetes_binary)) +
-  geom_bar(position = "dodge") +
-  scale_fill_manual(values = c(
-    "No Diabetes" = "lightgreen",
-    "Diabetes" = "salmon"
-  )) +
-  labs(
-    title = "Distribution of Mentally Unhealthy Days by Diabetes Status",
-    x = "physical Health (Last 30 Days)",
-    y = "Count",
-    fill = "Diabetes Status"
-  ) +
-  theme_minimal()
-```
-
-```{r}
-physical_table =
-  diabetes |> 
-  count(physical, diabetes_binary) |> 
-  group_by(physical) |> 
-  mutate(
-    prop = round(n / sum(n) * 100, 1)
-  ) |> 
-  select(Physical = physical, Diabetes_Status = diabetes_binary, Count = n, Proportion = prop) 
-
-knitr::kable(physical_table)
-```
-
-Individuals with diabetes show a higher count in both the 1–13 days and 14+ days categories than would be expected relative to the non-diabetic group, with 17.4% and 30.6%, respectively.
