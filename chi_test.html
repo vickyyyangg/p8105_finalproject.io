@@ -33,6 +33,7 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
@@ -221,6 +222,9 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -369,6 +373,14 @@ div.tocify {
 
 <div id="header">
 
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
 
 
 <h1 class="title toc-ignore">Characteristics between diabetic and
@@ -380,7 +392,7 @@ non-diabetic groups</h1>
 <div id="chi-square-test-for-categorical-variables"
 class="section level1">
 <h1>Chi-square test for categorical variables</h1>
-<pre class="r"><code>chi_diabetes = read.csv(&quot;~/p8105_finalproject/Diabete datasets/diabetes_binary_health_indicators_BRFSS2015.csv&quot;)
+<pre class="r"><code>chi_diabetes = read.csv(&quot;Diabete datasets/diabetes_binary_health_indicators_BRFSS2015.csv&quot;)
 
 cat_vars &lt;- c(
   &quot;HighBP&quot;, &quot;HighChol&quot;, &quot;Smoker&quot;, &quot;Stroke&quot;, &quot;HeartDiseaseorAttack&quot;,
@@ -499,12 +511,12 @@ for (v in names(chi_results)) {
 ## Chi-square: 7003.715 
 ## df: 7 
 ## p-value: 0</code></pre>
-</div>
-<div id="chi-square-test-result" class="section level1">
-<h1>Chi-square test result</h1>
+<div id="chi-square-test-result" class="section level2">
+<h2>Chi-square test result</h2>
 <p><strong>All categorical variables</strong> showed statistically
 significant differences between diabetic and non-diabetic participants
 (all p &lt; 0.001).</p>
+</div>
 </div>
 <div id="t-test-for-continuous-variables" class="section level1">
 <h1>T-test for continuous variables</h1>
@@ -574,22 +586,17 @@ for (v in cont_vars) {
 ## sample estimates:
 ## mean in group 0 mean in group 1 
 ##        2.385185        3.290981</code></pre>
+<div id="t-test-result" class="section level2">
+<h2>T-test result</h2>
 <p>All tests showed <strong>highly significant differences</strong> (all
 p &lt; 2.2 × 10⁻¹⁶), indicating that the mean health outcomes differ
 substantially between the two groups.</p>
 </div>
+</div>
 <div id="visualization-for-continuous-variables" class="section level1">
 <h1>Visualization for continuous variables</h1>
-<pre class="r"><code>library(dplyr)</code></pre>
-<pre><code>## 
-## Attaching package: &#39;dplyr&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:stats&#39;:
-## 
-##     filter, lag</code></pre>
-<pre><code>## The following objects are masked from &#39;package:base&#39;:
-## 
-##     intersect, setdiff, setequal, union</code></pre>
-<pre class="r"><code>library(tidyr)
+<pre class="r"><code>library(dplyr)
+library(tidyr)
 library(ggplot2)
 
 df_cont &lt;- 
@@ -663,6 +670,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
 <script>
 $(document).ready(function ()  {

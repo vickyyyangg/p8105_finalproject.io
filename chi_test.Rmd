@@ -4,6 +4,7 @@ output:
   html_document:
     toc: true
     toc_float: true
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
@@ -11,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 # Chi-square test for categorical variables
 ```{r}
-chi_diabetes = read.csv("~/p8105_finalproject/Diabete datasets/diabetes_binary_health_indicators_BRFSS2015.csv")
+chi_diabetes = read.csv("Diabete datasets/diabetes_binary_health_indicators_BRFSS2015.csv")
 
 cat_vars <- c(
   "HighBP", "HighChol", "Smoker", "Stroke", "HeartDiseaseorAttack",
@@ -37,7 +38,7 @@ for (v in names(chi_results)) {
 
 ```
 
-# Chi-square test result
+## Chi-square test result
 **All categorical variables** showed statistically significant differences between diabetic and non-diabetic participants (all p < 0.001).
 
 # T-test for continuous variables
@@ -51,11 +52,12 @@ for (v in cont_vars) {
 }
 ```
 
+## T-test result
 All tests showed **highly significant differences** (all p < 2.2 × 10⁻¹⁶), indicating that the mean health outcomes differ substantially between the two groups.
 
 
 # Visualization for continuous variables
-```{r t_test_plot, warning=FALSE}
+```{r t_test_plot, warning=FALSE, message=FALSE}
 library(dplyr)
 library(tidyr)
 library(ggplot2)
