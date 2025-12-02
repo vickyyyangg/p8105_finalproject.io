@@ -265,7 +265,7 @@ The proportions show that there is a strong relationship between each clinical c
 The mean of the number of days in the past month during which an individual reported poor mental health is `r round(mean(diabetes$ment_hlth),3)`.
 
 
-```{r,error=FALSE}
+```{r,message = FALSE}
 diabetes |> 
   ggplot(aes(x = ment_hlth))+
   geom_histogram()
