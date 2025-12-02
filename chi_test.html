@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Characteristics between diabetic and non-diabetic groups</title>
+
+<script src="site_libs/header-attrs-2.30/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Home</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="proposal.html">Proposal</a>
+</li>
+<li>
+  <a href="report.html">Report</a>
+</li>
+<li>
+  <a href="introduction.html">Introduction</a>
+</li>
+<li>
+  <a href="data.html">Data</a>
+</li>
+<li>
+  <a href="EDA.html">EDA</a>
+</li>
+<li>
+  <a href="analysis.html">Analysis</a>
+</li>
+<li>
+  <a href="discussion.html">Discussion</a>
+</li>
+<li>
+  <a href="prediction.html">Prediction</a>
+</li>
+<li>
+  <a href="mailto:&lt;vy2196@cumc.columbia.edu&gt;">
+    <span class="fa fa-envelope fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="http://github.com/vickyyyangg/">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Characteristics between diabetic and
+non-diabetic groups</h1>
+
+</div>
+
+
+<div id="chi-square-test-for-categorical-variables"
+class="section level1">
+<h1>Chi-square test for categorical variables</h1>
+<pre class="r"><code>chi_diabetes = read.csv(&quot;~/p8105_finalproject/Diabete datasets/diabetes_binary_health_indicators_BRFSS2015.csv&quot;)
+
+cat_vars &lt;- c(
+  &quot;HighBP&quot;, &quot;HighChol&quot;, &quot;Smoker&quot;, &quot;Stroke&quot;, &quot;HeartDiseaseorAttack&quot;,
+  &quot;PhysActivity&quot;, &quot;Fruits&quot;, &quot;Veggies&quot;, &quot;HvyAlcoholConsump&quot;,
+  &quot;AnyHealthcare&quot;, &quot;NoDocbcCost&quot;, &quot;DiffWalk&quot;,
+  &quot;Sex&quot;, &quot;Age&quot;, &quot;Education&quot;, &quot;Income&quot;
+)
+chi_results &lt;- list()
+
+for (v in cat_vars) {
+  tbl &lt;- table(chi_diabetes$Diabetes_binary, chi_diabetes[[v]])
+  test &lt;- chisq.test(tbl)
+  chi_results[[v]] &lt;- test
+}
+
+for (v in names(chi_results)) {
+  cat(&quot;\n====================\n&quot;)
+  cat(&quot;Variable:&quot;, v, &quot;\n&quot;)
+  cat(&quot;Chi-square:&quot;, chi_results[[v]]$statistic, &quot;\n&quot;)
+  cat(&quot;df:&quot;, chi_results[[v]]$parameter, &quot;\n&quot;)
+  cat(&quot;p-value:&quot;, chi_results[[v]]$p.value, &quot;\n&quot;)
+}</code></pre>
+<pre><code>## 
+## ====================
+## Variable: HighBP 
+## Chi-square: 17562.45 
+## df: 1 
+## p-value: 0 
+## 
+## ====================
+## Variable: HighChol 
+## Chi-square: 10174.07 
+## df: 1 
+## p-value: 0 
+## 
+## ====================
+## Variable: Smoker 
+## Chi-square: 937.0558 
+## df: 1 
+## p-value: 8.640172e-206 
+## 
+## ====================
+## Variable: Stroke 
+## Chi-square: 2838.917 
+## df: 1 
+## p-value: 0 
+## 
+## ====================
+## Variable: HeartDiseaseorAttack 
+## Chi-square: 7971.156 
+## df: 1 
+## p-value: 0 
+## 
+## ====================
+## Variable: PhysActivity 
+## Chi-square: 3539.419 
+## df: 1 
+## p-value: 0 
+## 
+## ====================
+## Variable: Fruits 
+## Chi-square: 421.6115 
+## df: 1 
+## p-value: 1.088121e-93 
+## 
+## ====================
+## Variable: Veggies 
+## Chi-square: 811.806 
+## df: 1 
+## p-value: 1.463029e-178 
+## 
+## ====================
+## Variable: HvyAlcoholConsump 
+## Chi-square: 825.1188 
+## df: 1 
+## p-value: 1.865932e-181 
+## 
+## ====================
+## Variable: AnyHealthcare 
+## Chi-square: 66.81237 
+## df: 1 
+## p-value: 2.986181e-16 
+## 
+## ====================
+## Variable: NoDocbcCost 
+## Chi-square: 250.3138 
+## df: 1 
+## p-value: 2.218395e-56 
+## 
+## ====================
+## Variable: DiffWalk 
+## Chi-square: 12092.32 
+## df: 1 
+## p-value: 0 
+## 
+## ====================
+## Variable: Sex 
+## Chi-square: 250.4137 
+## df: 1 
+## p-value: 2.109875e-56 
+## 
+## ====================
+## Variable: Age 
+## Chi-square: 8795.051 
+## df: 12 
+## p-value: 0 
+## 
+## ====================
+## Variable: Education 
+## Chi-square: 4027.112 
+## df: 5 
+## p-value: 0 
+## 
+## ====================
+## Variable: Income 
+## Chi-square: 7003.715 
+## df: 7 
+## p-value: 0</code></pre>
+</div>
+<div id="t-test-for-continuous-variables" class="section level1">
+<h1>T-test for continuous variables</h1>
+<pre class="r"><code>cont_vars &lt;- c(&quot;BMI&quot;, &quot;MentHlth&quot;, &quot;PhysHlth&quot;, &quot;GenHlth&quot;)
+
+for (v in cont_vars) {
+  cat(&quot;\n==========================\n&quot;)
+  cat(&quot;Outcome:&quot;, v, &quot;\n&quot;)
+  print(t.test(chi_diabetes[[v]] ~ chi_diabetes$Diabetes_binary))
+}</code></pre>
+<pre><code>## 
+## ==========================
+## Outcome: BMI 
+## 
+##  Welch Two Sample t-test
+## 
+## data:  chi_diabetes[[v]] by chi_diabetes$Diabetes_binary
+## t = -99.92, df = 44093, p-value &lt; 2.2e-16
+## alternative hypothesis: true difference in means between group 0 and group 1 is not equal to 0
+## 95 percent confidence interval:
+##  -4.219416 -4.057065
+## sample estimates:
+## mean in group 0 mean in group 1 
+##        27.80577        31.94401 
+## 
+## 
+## ==========================
+## Outcome: MentHlth 
+## 
+##  Welch Two Sample t-test
+## 
+## data:  chi_diabetes[[v]] by chi_diabetes$Diabetes_binary
+## t = -29.695, df = 42872, p-value &lt; 2.2e-16
+## alternative hypothesis: true difference in means between group 0 and group 1 is not equal to 0
+## 95 percent confidence interval:
+##  -1.581710 -1.385835
+## sample estimates:
+## mean in group 0 mean in group 1 
+##        2.978034        4.461806 
+## 
+## 
+## ==========================
+## Outcome: PhysHlth 
+## 
+##  Welch Two Sample t-test
+## 
+## data:  chi_diabetes[[v]] by chi_diabetes$Diabetes_binary
+## t = -68.969, df = 41367, p-value &lt; 2.2e-16
+## alternative hypothesis: true difference in means between group 0 and group 1 is not equal to 0
+## 95 percent confidence interval:
+##  -4.435979 -4.190814
+## sample estimates:
+## mean in group 0 mean in group 1 
+##        3.641082        7.954479 
+## 
+## 
+## ==========================
+## Outcome: GenHlth 
+## 
+##  Welch Two Sample t-test
+## 
+## data:  chi_diabetes[[v]] by chi_diabetes$Diabetes_binary
+## t = -156.14, df = 47855, p-value &lt; 2.2e-16
+## alternative hypothesis: true difference in means between group 0 and group 1 is not equal to 0
+## 95 percent confidence interval:
+##  -0.9171656 -0.8944254
+## sample estimates:
+## mean in group 0 mean in group 1 
+##        2.385185        3.290981</code></pre>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

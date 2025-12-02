@@ -1,0 +1,46 @@
+---
+title: "Characteristics between diabetic and non-diabetic groups"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Chi-square test for categorical variables
+```{r}
+chi_diabetes = read.csv("~/p8105_finalproject/Diabete datasets/diabetes_binary_health_indicators_BRFSS2015.csv")
+
+cat_vars <- c(
+  "HighBP", "HighChol", "Smoker", "Stroke", "HeartDiseaseorAttack",
+  "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump",
+  "AnyHealthcare", "NoDocbcCost", "DiffWalk",
+  "Sex", "Age", "Education", "Income"
+)
+chi_results <- list()
+
+for (v in cat_vars) {
+  tbl <- table(chi_diabetes$Diabetes_binary, chi_diabetes[[v]])
+  test <- chisq.test(tbl)
+  chi_results[[v]] <- test
+}
+
+for (v in names(chi_results)) {
+  cat("\n====================\n")
+  cat("Variable:", v, "\n")
+  cat("Chi-square:", chi_results[[v]]$statistic, "\n")
+  cat("df:", chi_results[[v]]$parameter, "\n")
+  cat("p-value:", chi_results[[v]]$p.value, "\n")
+}
+
+```
+
+# T-test for continuous variables
+```{r t_test}
+cont_vars <- c("BMI", "MentHlth", "PhysHlth", "GenHlth")
+
+for (v in cont_vars) {
+  cat("\n==========================\n")
+  cat("Outcome:", v, "\n")
+  print(t.test(chi_diabetes[[v]] ~ chi_diabetes$Diabetes_binary))
+}
+```
