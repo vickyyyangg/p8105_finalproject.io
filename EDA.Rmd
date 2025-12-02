@@ -214,7 +214,8 @@ diabetes |>
 Individuals with diabetes (median = 31.8) have noticeably higher BMI values compared to those without diabetes (median = 27.7). The pattern is consistent with established clinical evidence that higher BMI is a major risk factor for diabetes.
 
 
-The variables are separated into three main parts: clinical conditions, lifestyle, and access to healthcare / function. 
+>The variables are separated into three main parts: clinical conditions, lifestyle, and access to healthcare / function.
+
 
 ## <b>Clinical Conditions</b>
 
