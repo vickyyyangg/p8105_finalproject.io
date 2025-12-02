@@ -747,9 +747,6 @@ Binary models performed substantially better:
 ---
 
 # 6. Discussion
-
-
-## Discussion(annie): 
  
 In general, all characteristics show significant differences between individuals with and without diabetes. This aligns with expectations, as many health and demographic factors, such as blood pressure, cholesterol, physical activity, age, and income, are known to be associated with diabetes risk. One thing that we didn’t expect is that many p-values are extremely small, indicating exceptionally strong group differences. This suggests that the predictors in this dataset have very strong associations with diabetes status, much stronger than what might typically be observed in population-level studies. Overall, these results highlight clear disparities in health behaviors, health status, and demographic characteristics between diabetic and non-diabetic individuals, providing insight into the underlying factors that may contribute to diabetes risk.
 
