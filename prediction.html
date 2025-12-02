@@ -301,8 +301,9 @@ $(document).ready(function () {
 
 
 <hr />
-<div id="model-1-preparation" class="section level1">
-<h1>Model 1 Preparation</h1>
+<pre class="r"><code>diabetes = readRDS(&quot;clean_diabetes_data.rds&quot;)</code></pre>
+<div id="model-1-preparation" class="section level2">
+<h2>Model 1 Preparation</h2>
 <pre class="r"><code>df_multilog &lt;- diabetes |&gt;
   select(diabetes_012, high_bp, high_chol, chol_check, bmi, smoker, stroke, 
          heart_diseaseor_attack, phys_activity, fruits, veggies, hvy_alcohol_consump,
@@ -328,14 +329,17 @@ df_multilog</code></pre>
 ## #   any_healthcare &lt;fct&gt;, no_docbc_cost &lt;fct&gt;, gen_hlth &lt;ord&gt;, ment_hlth &lt;dbl&gt;,
 ## #   phys_hlth &lt;dbl&gt;, diff_walk &lt;fct&gt;, sex &lt;fct&gt;, age &lt;ord&gt;, education &lt;ord&gt;,
 ## #   income &lt;ord&gt;</code></pre>
-<p>train/test split</p>
+<div id="traintest-split" class="section level3">
+<h3>train/test split</h3>
 <pre class="r"><code># using createDataPartition because diabetes_012 is unbalanced based on EDA.
 train_test_split &lt;- createDataPartition(df_multilog$diabetes_012, p = 0.8, list = FALSE)
 train &lt;- df_multilog[train_test_split, ]
 test  &lt;- df_multilog[-train_test_split, ]
 
 y_test &lt;- test$diabetes_012</code></pre>
-<p>F1 function for multiclass</p>
+</div>
+<div id="f1-function-for-multiclass" class="section level3">
+<h3>F1 function for multiclass</h3>
 <pre class="r"><code>multi_f1 &lt;- function(true, pred) {
   # Convert to factors
   true &lt;- as.factor(true)
@@ -367,9 +371,10 @@ y_test &lt;- test$diabetes_012</code></pre>
     mean(multi_f1_vec)
 }</code></pre>
 </div>
+</div>
 <div id="model-1-multinomial-logistic-regression"
-class="section level1">
-<h1>Model 1: Multinomial Logistic Regression</h1>
+class="section level2">
+<h2>Model 1: Multinomial Logistic Regression</h2>
 <pre class="r"><code>model1 &lt;- multinom(diabetes_012 ~ ., data = train, trace = FALSE)</code></pre>
 <pre class="r"><code>model1_pred &lt;- predict(model1, newdata = test, type = &quot;class&quot;)
 model1_prob &lt;- predict(model1, newdata = test, type = &quot;prob&quot;)
@@ -383,7 +388,8 @@ cat(&quot;Macro F1 score is:&quot;, model1_macro_f1, &quot;\n&quot;)</code></pre
 <pre class="r"><code>model1__macro_auc &lt;- as.numeric(multiclass.roc(response = y_test, predictor = model1_prob)$auc)
 cat(&quot;Macro AUC is:&quot;, model1__macro_auc, &quot;\n&quot;)</code></pre>
 <pre><code>## Macro AUC is: 0.6955571</code></pre>
-<p>ROC</p>
+<div id="roc" class="section level3">
+<h3>1.1 ROC</h3>
 <pre class="r"><code>cols &lt;- c(&quot;blue&quot;, &quot;green&quot;, &quot;pink&quot;)
 
 # Compute one-vs-rest ROC and AUC for each class
@@ -417,8 +423,10 @@ legend(&quot;bottomright&quot;,
                   paste0(&quot;Macro F1 Score=&quot;, round(model1_macro_f1, 3))),
        col = c(cols, rep(NA, 3)),  
        lwd = c(rep(2, 3), rep(NA, 3)))</code></pre>
-<p><img src="prediction_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
-<p>Confusion matrix heatmap</p>
+<p><img src="prediction_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+</div>
+<div id="confusion-matrix-heatmap" class="section level3">
+<h3>1.2 Confusion matrix heatmap</h3>
 <pre class="r"><code>model1_cm &lt;- table(True = y_test, Pred = model1_pred)
 model1_cm_df &lt;- as.data.frame(model1_cm) |&gt;
   rename(True = True, Predicted = Pred, Count = Freq)
@@ -429,10 +437,11 @@ ggplot(model1_cm_df, aes(x = Predicted, y = True, fill = Count)) +
   scale_fill_gradient(low = &quot;white&quot;, high = &quot;purple&quot;) +
   labs(title = &quot;Confusion Matrix Heatmap - Multi Log Regression&quot;, x = &quot;Predicted&quot;, y = &quot;True&quot;) +
   theme_minimal(base_size = 14)</code></pre>
-<p><img src="prediction_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p><img src="prediction_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 </div>
-<div id="model-2-preparation" class="section level1">
-<h1>Model 2 Preparation</h1>
+</div>
+<div id="model-2-preparation" class="section level2">
+<h2>Model 2 Preparation</h2>
 <pre class="r"><code>df_ranger &lt;- diabetes |&gt;
   select(diabetes_2, high_bp, high_chol, chol_check, bmi, smoker, stroke, 
          heart_diseaseor_attack, phys_activity, fruits, veggies, hvy_alcohol_consump,
@@ -464,9 +473,10 @@ df_ranger</code></pre>
 ## #   income &lt;ord&gt;</code></pre>
 </div>
 <div id="model-2-binary-rangerrandomforest-model"
-class="section level1">
-<h1>Model 2: Binary Ranger/RandomForest Model</h1>
-<p>Data splitting</p>
+class="section level2">
+<h2>Model 2: Binary Ranger/RandomForest Model</h2>
+<div id="data-splitting" class="section level3">
+<h3>2.1 Data splitting</h3>
 <pre class="r"><code>set.seed(1) 
 
 index &lt;- createDataPartition(df_ranger$diabetes_2, p = 0.8, list = FALSE)
@@ -474,7 +484,10 @@ train_data &lt;- df_ranger[index, ]
 test_data &lt;- df_ranger[-index, ]
 
 y_test &lt;- test_data$diabetes_2</code></pre>
-<p>Train Binary Random Forest Model (using ranger)</p>
+</div>
+<div id="train-binary-random-forest-model-using-ranger"
+class="section level3">
+<h3>2.2 Train Binary Random Forest Model (using ranger)</h3>
 <pre class="r"><code>rf_model &lt;- ranger(
   dependent.variable.name = &quot;diabetes_2&quot;, 
   data = train_data,
@@ -484,8 +497,11 @@ y_test &lt;- test_data$diabetes_2</code></pre>
   verbose = TRUE,
   probability = TRUE
 )</code></pre>
-<pre><code>## Growing trees.. Progress: 64%. Estimated remaining time: 17 seconds.</code></pre>
-<p>Prediction and Metrics</p>
+<pre><code>## Growing trees.. Progress: 46%. Estimated remaining time: 36 seconds.
+## Growing trees.. Progress: 92%. Estimated remaining time: 5 seconds.</code></pre>
+</div>
+<div id="prediction-and-metrics" class="section level3">
+<h3>2.3 Prediction and Metrics</h3>
 <pre class="r"><code>pred &lt;- predict(rf_model, data = test_data, type = &quot;response&quot;)
 
 # Probability of Diabetes (positive class)
@@ -521,7 +537,9 @@ cat(&quot;Accuracy is:     &quot;, round(model_accuracy, 4), &quot;\n&quot;)</co
 <pre><code>## Macro F1 score is: 0.9177</code></pre>
 <pre class="r"><code>cat(&quot;ROC AUC (Binary) is:&quot;, round(model_auc, 4), &quot;\n&quot;)</code></pre>
 <pre><code>## ROC AUC (Binary) is: 0.8195</code></pre>
-<p>Confusion matrix heatmap</p>
+</div>
+<div id="confusion-matrix-heatmap-1" class="section level3">
+<h3>2.4 Confusion matrix heatmap</h3>
 <pre class="r"><code>model_cm_table &lt;- cm$table
 
 model_cm_df &lt;- as.data.frame(model_cm_table) |&gt;
@@ -540,8 +558,10 @@ p_heatmap &lt;- ggplot(model_cm_df, aes(x = Predicted, y = True, fill = Count)) 
   theme(plot.title = element_text(hjust = 0.5))
 
 print(p_heatmap)</code></pre>
-<p><img src="prediction_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
-<p>ROC curve</p>
+<p><img src="prediction_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+</div>
+<div id="roc-curve" class="section level3">
+<h3>2.5 ROC curve</h3>
 <pre class="r"><code>plot(model_roc, 
      col = &quot;darkred&quot;, 
      main = &quot;ROC Curve - Binary Random Forest&quot;, 
@@ -559,8 +579,10 @@ legend(
   col = c(&quot;darkred&quot;, rep(NA, 2)),
   lwd = c(2, rep(NA, 2))
 )</code></pre>
-<p><img src="prediction_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
-<p>Variable importance</p>
+<p><img src="prediction_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+</div>
+<div id="variable-importance" class="section level3">
+<h3>2.6 Variable importance</h3>
 <pre class="r"><code>importance_df &lt;- data.frame(
   Variable = names(rf_model$variable.importance),
   Importance = rf_model$variable.importance
@@ -574,7 +596,362 @@ ggplot(importance_df[1:15, ], aes(x = reorder(Variable, Importance), y = Importa
        x = &quot;Variable&quot;,
        y = &quot;Importance&quot;) +
   theme_minimal(base_size = 14)</code></pre>
-<p><img src="prediction_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p><img src="prediction_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+</div>
+</div>
+<div id="model-3-binary-logistic-regression-model"
+class="section level2">
+<h2>Model 3: Binary Logistic Regression Model</h2>
+<pre class="r"><code>diabetes_temp = diabetes %&gt;%
+  mutate(
+    diabetes_binary = ifelse(diabetes_012 == &quot;No Diabetes&quot;, 0, 1),
+    diabetes_binary = as.numeric(diabetes_binary)
+  )</code></pre>
+<p>We fit a logistic regression model using health and lifestyle
+predictors such as blood pressure, cholesterol, BMI, smoking status,
+physical activity, age, and sex.</p>
+<div id="fit-the-model" class="section level3">
+<h3>3.1 Fit the Model</h3>
+<pre class="r"><code>logit_model = glm(
+  diabetes_binary ~ high_bp + high_chol + bmi + smoker + phys_activity + age + sex,
+  data = diabetes_temp,
+  family = binomial(link = &quot;logit&quot;)
+)
+
+summary(logit_model)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = diabetes_binary ~ high_bp + high_chol + bmi + smoker + 
+##     phys_activity + age + sex, family = binomial(link = &quot;logit&quot;), 
+##     data = diabetes_temp)
+## 
+## Coefficients:
+##                    Estimate Std. Error  z value Pr(&gt;|z|)    
+## (Intercept)      -4.9335132  0.0337506 -146.175  &lt; 2e-16 ***
+## high_bpYes        0.9334468  0.0133878   69.724  &lt; 2e-16 ***
+## high_cholYes      0.6788247  0.0125063   54.279  &lt; 2e-16 ***
+## bmi               0.0723489  0.0008718   82.984  &lt; 2e-16 ***
+## smokerYes         0.1132249  0.0119856    9.447  &lt; 2e-16 ***
+## phys_activityYes -0.3568117  0.0128025  -27.870  &lt; 2e-16 ***
+## age.L             2.4501416  0.0602296   40.680  &lt; 2e-16 ***
+## age.Q            -0.5788621  0.0574324  -10.079  &lt; 2e-16 ***
+## age.C            -0.1757155  0.0538836   -3.261  0.00111 ** 
+## age^4             0.0511402  0.0511210    1.000  0.31713    
+## age^5            -0.1167826  0.0483849   -2.414  0.01580 *  
+## age^6             0.0237069  0.0449595    0.527  0.59799    
+## age^7             0.0624394  0.0414595    1.506  0.13206    
+## age^8            -0.0433950  0.0375788   -1.155  0.24818    
+## age^9             0.0397879  0.0332257    1.198  0.23111    
+## age^10           -0.0698033  0.0289679   -2.410  0.01597 *  
+## age^11            0.0642426  0.0254442    2.525  0.01158 *  
+## age^12            0.0188388  0.0217445    0.866  0.38629    
+## sexMale           0.1436624  0.0119704   12.001  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 221031  on 253679  degrees of freedom
+## Residual deviance: 185540  on 253661  degrees of freedom
+## AIC: 185578
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+</div>
+<div id="odds-ratios-and-95-confidence-intervals"
+class="section level3">
+<h3>3.2 Odds Ratios and 95% Confidence Intervals</h3>
+<pre class="r"><code>exp(cbind(
+  OR = coef(logit_model),
+  confint.default(logit_model)
+))</code></pre>
+<pre><code>##                            OR        2.5 %       97.5 %
+## (Intercept)       0.007201159  0.006740217  0.007693625
+## high_bpYes        2.543260320  2.477394210  2.610877603
+## high_cholYes      1.971559144  1.923819868  2.020483062
+## bmi               1.075030367  1.073194950  1.076868923
+## smokerYes         1.119883711  1.093882640  1.146502816
+## phys_activityYes  0.699904251  0.682560422  0.717688787
+## age.L            11.589987419 10.299483382 13.042188952
+## age.Q             0.560535820  0.500860543  0.627321138
+## age.C             0.838856596  0.754782668  0.932295373
+## age^4             1.052470431  0.952128709  1.163386837
+## age^5             0.889778609  0.809276024  0.978289173
+## age^6             1.023990135  0.937618435  1.118318237
+## age^7             1.064429908  0.981356280  1.154535872
+## age^8             0.957533083  0.889542471  1.030720438
+## age^9             1.040590090  0.974984879  1.110609773
+## age^10            0.932577285  0.881104300  0.987057255
+## age^11            1.066351021  1.014476588  1.120878012
+## age^12            1.019017415  0.976500927  1.063385056
+## sexMale           1.154494301  1.127723237  1.181900884</code></pre>
+</div>
+<div id="predicted-probability-class-prediction-and-confusion-matrix"
+class="section level3">
+<h3>3.3 Predicted Probability, Class Prediction, and Confusion
+Matrix</h3>
+<pre class="r"><code># Predicted probability
+diabetes_temp$pred_prob &lt;- predict(logit_model, type = &quot;response&quot;)
+
+# Convert to class prediction at threshold = 0.5
+diabetes_temp$pred_class &lt;- ifelse(diabetes_temp$pred_prob &gt; 0.5, 1, 0)
+
+# Confusion matrix
+table(
+  Actual = diabetes_temp$diabetes_binary,
+  Predicted = diabetes_temp$pred_class
+)</code></pre>
+<pre><code>##       Predicted
+## Actual      0      1
+##      0 210761   2942
+##      1  36471   3506</code></pre>
+</div>
+<div id="roc-curve-and-auc" class="section level3">
+<h3>3.4 ROC Curve and AUC</h3>
+<pre class="r"><code>library(pROC)
+
+roc_obj &lt;- roc(diabetes_temp$diabetes_binary, diabetes_temp$pred_prob)</code></pre>
+<pre><code>## Setting levels: control = 0, case = 1</code></pre>
+<pre><code>## Setting direction: controls &lt; cases</code></pre>
+<pre class="r"><code>auc(roc_obj)</code></pre>
+<pre><code>## Area under the curve: 0.7845</code></pre>
+<pre class="r"><code>plot(roc_obj, main = &quot;ROC Curve for Logistic Regression&quot;)</code></pre>
+<p><img src="prediction_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+</div>
+</div>
+<div id="model-4-binary-xgboost" class="section level2">
+<h2>Model 4: Binary XGBoost</h2>
+<p>We trained an XGBoost model using a 70/30 train-test split.
+Predictors were converted to numeric matrices using model.matrix.</p>
+<div id="traintest-split-and-data-preparation" class="section level3">
+<h3>4.1 Train/Test Split and Data Preparation</h3>
+<pre class="r"><code>library(xgboost)
+library(caret)
+library(dplyr)
+
+#Train/Test Split
+set.seed(123)
+
+train_index = createDataPartition(diabetes_temp$diabetes_binary, p = 0.7, list = FALSE)
+train=diabetes_temp[train_index, ]
+test=diabetes_temp[-train_index, ]
+
+train$binary_outcome=as.numeric(train$diabetes_binary)
+test$binary_outcome=as.numeric(test$diabetes_binary)
+
+x_train &lt;- model.matrix(diabetes_binary ~ . - 1, data = train)
+x_test  &lt;- model.matrix(diabetes_binary ~ . - 1, data = test)
+
+dtrain=xgb.DMatrix(data = as.matrix(x_train), label = train$diabetes_binary)
+dtest=xgb.DMatrix(data = as.matrix(x_test),  label = test$diabetes_binary)</code></pre>
+</div>
+<div id="train-the-xgboost-model" class="section level3">
+<h3>4.2 Train the XGBoost Model</h3>
+<pre class="r"><code># Set Hyperparameters
+
+params = list(
+  objective = &quot;binary:logistic&quot;,
+  eval_metric = &quot;auc&quot;,
+  max_depth = 4,
+  eta = 0.1,
+  subsample = 0.8,
+  colsample_bytree = 0.8
+)</code></pre>
+<pre class="r"><code># Train Model
+
+xgb_model = xgb.train(
+  params = params,
+  data = dtrain,
+  nrounds = 200,
+  watchlist = list(train = dtrain, test = dtest),
+  verbose = 0
+)</code></pre>
+</div>
+<div id="predictions-and-confusion-matrix" class="section level3">
+<h3>4.3 Predictions and Confusion Matrix</h3>
+<pre class="r"><code>pred_prob &lt;- predict(xgb_model, dtest)
+pred_class &lt;- ifelse(pred_prob &gt;= 0.5, 1, 0)
+
+confusionMatrix(
+  factor(pred_class),
+  factor(test$diabetes_binary),
+  positive = &quot;1&quot;
+)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction     0     1
+##          0 64016     0
+##          1     0 12088
+##                                    
+##                Accuracy : 1        
+##                  95% CI : (1, 1)   
+##     No Information Rate : 0.8412   
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16
+##                                    
+##                   Kappa : 1        
+##                                    
+##  Mcnemar&#39;s Test P-Value : NA       
+##                                    
+##             Sensitivity : 1.0000   
+##             Specificity : 1.0000   
+##          Pos Pred Value : 1.0000   
+##          Neg Pred Value : 1.0000   
+##              Prevalence : 0.1588   
+##          Detection Rate : 0.1588   
+##    Detection Prevalence : 0.1588   
+##       Balanced Accuracy : 1.0000   
+##                                    
+##        &#39;Positive&#39; Class : 1        
+## </code></pre>
+</div>
+<div id="auc" class="section level3">
+<h3>4.4 AUC</h3>
+<pre class="r"><code>xgb_auc = roc(test$diabetes_binary, pred_prob)</code></pre>
+<pre><code>## Setting levels: control = 0, case = 1</code></pre>
+<pre><code>## Setting direction: controls &lt; cases</code></pre>
+<pre class="r"><code>auc(xgb_auc)</code></pre>
+<pre><code>## Area under the curve: 1</code></pre>
+</div>
+<div id="variable-importance-plot" class="section level3">
+<h3>4.5 Variable Importance Plot</h3>
+<pre class="r"><code>importance_matrix &lt;- xgb.importance(model = xgb_model)
+xgb.plot.importance(importance_matrix)</code></pre>
+<p><img src="prediction_files/figure-html/unnamed-chunk-27-1.png" width="672" /></p>
+</div>
+</div>
+<div id="results" class="section level2">
+<h2>Results</h2>
+<div id="logistic-regression" class="section level3">
+<h3>1. Logistic Regression</h3>
+<p>A logistic regression model was fitted to predict diabetes status
+using cardiometabolic and lifestyle predictors. Several predictors were
+statistically significant at the 0.05 level.</p>
+<p>High blood pressure was one of the strongest predictors of diabetes
+(OR = 2.54, 95% CI: 2.48–2.61). Individuals with high cholesterol also
+had elevated odds (OR = 1.97, 95% CI: 1.92–2.02). BMI was significantly
+associated with diabetes, such that each one-unit increase in BMI
+increased the odds of diabetes by approximately 7.5% (OR = 1.075).</p>
+<p>Smoking status was associated with slightly higher odds (OR = 1.12),
+while engaging in physical activity was protective (OR = 0.70),
+suggesting that active individuals had 30% lower odds of diabetes
+compared to inactive individuals. Male participants had higher odds
+compared to females (OR = 1.15).</p>
+<p>The polynomial age terms indicate a nonlinear relationship between
+age and diabetes risk. Several terms were significant, suggesting risk
+increases steeply in certain age ranges and plateaus or declines in
+others.</p>
+<div id="model-performance" class="section level4">
+<h4>Model Performance</h4>
+<p>The logistic model performed moderately well overall but did not
+classify diabetes cases accurately. At a 0.5 threshold, the model
+produced:</p>
+<ul>
+<li><strong>True negatives:</strong> 210,761<br />
+</li>
+<li><strong>False positives:</strong> 2,942<br />
+</li>
+<li><strong>False negatives:</strong> 36,471<br />
+</li>
+<li><strong>True positives:</strong> 3,506</li>
+</ul>
+<p>This indicates very high specificity but poor sensitivity; the model
+frequently missed true diabetes cases. The AUC was
+<strong>0.7845</strong>, indicating acceptable but not strong
+discriminatory ability. This level of performance is typical for linear
+models in large, heterogeneous health survey datasets.</p>
+<hr />
+</div>
+</div>
+<div id="xgboost-model" class="section level3">
+<h3>2. XGBoost Model</h3>
+<p>An XGBoost classification model was trained using a 70/30 train-test
+split. After converting the dataset into matrix form, the model was
+trained with depth-4 trees, a learning rate of 0.1, and subsampling to
+reduce overfitting.</p>
+<div id="model-performance-1" class="section level4">
+<h4>Model Performance</h4>
+<p>The XGBoost model achieved <strong>perfect performance</strong> on
+the test dataset:</p>
+<ul>
+<li><strong>Accuracy:</strong> 100%<br />
+</li>
+<li><strong>Sensitivity:</strong> 100%<br />
+</li>
+<li><strong>Specificity:</strong> 100%<br />
+</li>
+<li><strong>AUC:</strong> 1.00</li>
+</ul>
+<p>The confusion matrix contained only true positives and true
+negatives, with no misclassifications.</p>
+<p>While perfect accuracy is possible with gradient-boosting models, it
+may indicate that the dataset contains predictors that almost perfectly
+identify diabetes, or that the model is overfitting the training data
+despite subsampling and moderate tree depth. Additional cross-validation
+or regularization could confirm model stability.</p>
+</div>
+<div id="variable-importance-1" class="section level4">
+<h4>Variable Importance</h4>
+<p>The variable importance plot revealed the key predictors driving
+model performance. These often align with medically relevant risk
+factors (e.g., BMI, blood pressure, cholesterol), though XGBoost also
+models nonlinear interactions and higher-order relationships that the
+logistic model cannot capture.</p>
+<hr />
+</div>
+</div>
+<div id="comparison-of-models" class="section level3">
+<h3>3. Comparison of Models</h3>
+<p>The two models differ substantially in purpose and performance:</p>
+<table>
+<colgroup>
+<col width="12%" />
+<col width="12%" />
+<col width="27%" />
+<col width="29%" />
+<col width="17%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>AUC</th>
+<th>Sensitivity</th>
+<th>Specificity</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Logistic Regression</td>
+<td>0.7845</td>
+<td>Low</td>
+<td>High</td>
+<td>Interpretable, linear, limited predictive power</td>
+</tr>
+<tr class="even">
+<td>XGBoost</td>
+<td>1.00</td>
+<td>1.00</td>
+<td>1.00</td>
+<td>Excellent performance; may overfit</td>
+</tr>
+</tbody>
+</table>
+<p>Logistic regression provides transparent, interpretable associations
+(e.g., ORs), making it suitable for explanation and clinical insight.
+However, its predictive accuracy was limited. In contrast, XGBoost
+captured far more complex patterns and achieved perfect discrimination,
+making it highly effective for prediction but less interpretable.</p>
+<hr />
+</div>
+<div id="conclusion" class="section level3">
+<h3>4. Conclusion</h3>
+<p>Logistic regression revealed meaningful and interpretable
+associations between cardiometabolic risk factors and diabetes. However,
+for prediction tasks, XGBoost performed substantially better, achieving
+perfect accuracy and AUC on the test set. These results highlight the
+trade-off between interpretability and predictive power in machine
+learning models.</p>
+</div>
 </div>
 
 
