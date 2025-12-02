@@ -11,7 +11,7 @@
 
 
 
-<title>Data Overview</title>
+<title>Exploring Diabetes Risk Factors and Predictive Modeling in the United States</title>
 
 <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -383,11 +383,56 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Data Overview</h1>
+<h1 class="title toc-ignore">Exploring Diabetes Risk Factors and
+Predictive Modeling in the United States</h1>
 
 </div>
 
 
+<p><em>Yvonne Xie, Rosie Kwon, Vicky Yang, Yiying Chen, Charlotte
+Zhang</em></p>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<div id="motivation" class="section level3">
+<h3><b>Motivation</b></h3>
+<p>Diabetes is a major public health concern in the United States.
+According to the Centers for Disease Control and Prevention (CDC),
+diabetes was the one of the leading causes of death in the United States
+in 2020 with 103,294 deaths. Beyond its health impact, the economic
+burden is substantial, with annual costs to patients and the health care
+system more than $412.9 billion in 2022.</p>
+<p>Between 2001 and 2020, the age-adjusted prevalence of diabetes among
+U.S. adults increased significantly. As shown in Figure below, this
+trend highlights the increasing urgency of addressing diabetes at the
+population level.</p>
+<p><img src="img/linegraph-1.jpg" > Data sources: 2001–March 2020
+National Health and Nutrition Examination Surveys.</p>
+<p>As Type 2 diabetes is largely preventable, identifying risk factors
+such as physical activity, smoking, and blood pressure levels is
+essential for guiding preventive interventions and health education
+efforts.</p>
+<p>Our project aims to analyze how behavioral factors are associated
+with diabetes prevalence using the CDC’s Behavioral Risk Factor
+Surveillance System (BRFSS) data. Also, we aim to develop a predictive
+model that estimates diabetes risk based on their health indicators. By
+the end of this project, we hope to provide actionable insights into the
+most influential factors associated with diabetes and to inform
+effective prevention and health promotion initiatives.</p>
+</div>
+<div id="related-work" class="section level3">
+<h3><b>Related work</b></h3>
+<p>Anything that inspired you, such as a paper, a web site, or something
+we discussed in class.</p>
+</div>
+<div id="initial-questions" class="section level3">
+<h3><b>Initial questions</b></h3>
+<p>What questions are you trying to answer? How did these questions
+evolve over the course of the project? What new questions did you
+consider in the course of your analysis?</p>
+</div>
+</div>
+<div id="data" class="section level2">
+<h2>Data</h2>
 <div id="data-source" class="section level3">
 <h3><b>Data Source</b></h3>
 <p>This Kaggle dataset <a
@@ -496,7 +541,7 @@ diabetes =
     diabetes_2 = as.factor(diabetes_2)
   )</code></pre>
 <pre><code>## Rows: 253680 Columns: 22
-## ── Column specification ─────────────────────────────────────
+## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
 ## dbl (22): Diabetes_012, HighBP, HighChol, CholCheck, BMI, Smoker, Stroke, He...
 ## 
@@ -942,6 +987,10 @@ climbing stairs? (0 = no 1 = yes)</p>
 <li>…</li>
 <li>8 = $75,000 +</li>
 </ul>
+</div>
+</div>
+<div id="exploratory-data-analysis" class="section level2">
+<h2>Exploratory Data Analysis</h2>
 </div>
 
 

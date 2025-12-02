@@ -1,0 +1,24 @@
+---
+title: "Exploring Diabetes Risk Factors and Predictive Modeling in the United States"
+output:
+  html_document:
+    self_contained: false
+    code_folding: hide
+    toc: true
+    toc_float: true
+    theme: cosmo
+
+---
+
+*Yvonne Xie, Rosie Kwon, Vicky Yang, Yiying Chen, Charlotte Zhang*
+
+
+## Introduction
+```{r child="introduction.Rmd"}
+```
+
+## Data
+```{r child="Data.Rmd"}
+```
+
+## Exploratory Data Analysis
