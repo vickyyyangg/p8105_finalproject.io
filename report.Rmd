@@ -1,0 +1,22 @@
+---
+title: "Report"
+output:
+  html_document:
+    self_contained: false
+    code_folding: hide
+    toc: true
+    toc_float: true
+    theme: cosmo
+
+---
+
+# Introduction
+```{r child="introduction.Rmd"}
+```
+
+# Data
+```{r child="Data.Rmd"}
+```
+
+# EDA
+```{r child="EDA.Rmd"}
