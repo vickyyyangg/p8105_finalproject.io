@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 chi_diabetes = read.csv("Diabete datasets/diabetes_binary_health_indicators_BRFSS2015.csv")
 
 cat_vars <- c(
-  "HighBP", "HighChol", "Smoker", "Stroke", "HeartDiseaseorAttack",
+  "HighBP", "HighChol", "CholCheck","Smoker", "Stroke", "HeartDiseaseorAttack",
   "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump",
   "AnyHealthcare", "NoDocbcCost", "DiffWalk",
   "Sex", "Age", "Education", "Income"

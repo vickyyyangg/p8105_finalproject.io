@@ -395,7 +395,7 @@ class="section level1">
 <pre class="r"><code>chi_diabetes = read.csv(&quot;Diabete datasets/diabetes_binary_health_indicators_BRFSS2015.csv&quot;)
 
 cat_vars &lt;- c(
-  &quot;HighBP&quot;, &quot;HighChol&quot;, &quot;Smoker&quot;, &quot;Stroke&quot;, &quot;HeartDiseaseorAttack&quot;,
+  &quot;HighBP&quot;, &quot;HighChol&quot;, &quot;CholCheck&quot;,&quot;Smoker&quot;, &quot;Stroke&quot;, &quot;HeartDiseaseorAttack&quot;,
   &quot;PhysActivity&quot;, &quot;Fruits&quot;, &quot;Veggies&quot;, &quot;HvyAlcoholConsump&quot;,
   &quot;AnyHealthcare&quot;, &quot;NoDocbcCost&quot;, &quot;DiffWalk&quot;,
   &quot;Sex&quot;, &quot;Age&quot;, &quot;Education&quot;, &quot;Income&quot;
@@ -427,6 +427,12 @@ for (v in names(chi_results)) {
 ## Chi-square: 10174.07 
 ## df: 1 
 ## p-value: 0 
+## 
+## ====================
+## Variable: CholCheck 
+## Chi-square: 1062.938 
+## df: 1 
+## p-value: 3.751399e-233 
 ## 
 ## ====================
 ## Variable: Smoker 
