@@ -1,6 +1,8 @@
 ---
-title: "Building A Diabetes Prediction Model"
+title: "Building Diabetes Prediction Models"
 output:
+  pdf_document:
+    toc: false
   html_document:
     self_contained: false
     theme: cosmo
@@ -14,36 +16,28 @@ library(tidyverse)
 library(caret)
 library(nnet)
 library(dplyr)
-library(randomForest)
 library(pROC) 
+library(ranger)
 ```
 
+# Model 1 Preparation 
 ```{r}
-set.seed(1)
-
-diabetes_original = 
-  read_csv("Diabete datasets/diabetes_012_health_indicators_BRFSS2015.csv") |>
-  janitor::clean_names() 
-
-diabetes_original <- diabetes_original |>
-  mutate(
-    ment_hlth = as.numeric(ment_hlth),
-    phys_hlth = as.numeric(phys_hlth),
-    bmi = as.numeric(bmi),
-    across(
-      .cols = -c(ment_hlth, phys_hlth, bmi),
-      .fns = as.factor
-    )
-  )
-head(diabetes_original)
+df_multilog <- diabetes |>
+  select(diabetes_012, high_bp, high_chol, chol_check, bmi, smoker, stroke, 
+         heart_diseaseor_attack, phys_activity, fruits, veggies, hvy_alcohol_consump,
+         any_healthcare, no_docbc_cost, gen_hlth, ment_hlth, phys_hlth, diff_walk, 
+         sex, age, education, income)
+df_multilog
 ```
+
+
 
 train/test split
 ```{r}
 # using createDataPartition because diabetes_012 is unbalanced based on EDA.
-train_test_split <- createDataPartition(diabetes_original$diabetes_012, p = 0.8, list = FALSE)
-train <- diabetes_original[train_test_split, ]
-test  <- diabetes_original[-train_test_split, ]
+train_test_split <- createDataPartition(df_multilog$diabetes_012, p = 0.8, list = FALSE)
+train <- df_multilog[train_test_split, ]
+test  <- df_multilog[-train_test_split, ]
 
 y_test <- test$diabetes_012
 ```
@@ -82,7 +76,9 @@ multi_f1 <- function(true, pred) {
 }
 ```
 
-Model 1: multinomial logistic regression
+
+
+# Model 1: Multinomial Logistic Regression
 ```{r}
 model1 <- multinom(diabetes_012 ~ ., data = train, trace = FALSE)
 ```
@@ -139,5 +135,141 @@ ggplot(model1_cm_df, aes(x = Predicted, y = True, fill = Count)) +
   geom_text(aes(label = Count), color = "black", size = 5) +
   scale_fill_gradient(low = "white", high = "purple") +
   labs(title = "Confusion Matrix Heatmap - Multi Log Regression", x = "Predicted", y = "True") +
+  theme_minimal(base_size = 14)
+```
+
+
+
+# Model 2 Preparation
+```{r}
+df_ranger <- diabetes |>
+  select(diabetes_2, high_bp, high_chol, chol_check, bmi, smoker, stroke, 
+         heart_diseaseor_attack, phys_activity, fruits, veggies, hvy_alcohol_consump,
+         any_healthcare, no_docbc_cost, gen_hlth, ment_hlth, phys_hlth, diff_walk, 
+         sex, age, education, income)
+
+df_ranger$diabetes_2 <- factor(df_ranger$diabetes_2, 
+                              levels = c(0, 1), 
+                              labels = c("No_Diabetes", "Diabetes"))
+df_ranger
+```
+
+# Model 2: Binary Ranger/RandomForest Model
+Data splitting
+```{r}
+set.seed(1) 
+
+index <- createDataPartition(df_ranger$diabetes_2, p = 0.8, list = FALSE)
+train_data <- df_ranger[index, ]
+test_data <- df_ranger[-index, ]
+
+y_test <- test_data$diabetes_2
+```
+
+
+Train Binary Random Forest Model (using ranger)
+```{r}
+rf_model <- ranger(
+  dependent.variable.name = "diabetes_2", 
+  data = train_data,
+  num.trees = 500,
+  importance = "impurity",
+  seed = 1,
+  verbose = TRUE,
+  probability = TRUE
+)
+```
+
+Prediction and Metrics
+```{r}
+pred <- predict(rf_model, data = test_data, type = "response")
+
+# Probability of Diabetes (positive class)
+model_prob <- pred$predictions[, "Diabetes"]
+
+# Class predictions = class with highest probability
+model_pred <- colnames(pred$predictions)[ max.col(pred$predictions) ]
+model_pred <- factor(model_pred, levels = levels(y_test))
+
+# Confusion matrix
+cm <- confusionMatrix(model_pred, y_test)
+
+# Accuracy
+model_accuracy <- as.numeric(cm$overall['Accuracy'])
+
+# F1 for Diabetes
+f1_diabetes <- as.numeric(cm$byClass['F1'])
+# F1 for No_Diabetes
+cm_rev <- confusionMatrix(model_pred, y_test, positive = "No_Diabetes")
+f1_no_diabetes <- as.numeric(cm_rev$byClass['F1'])
+# Macro F1
+model_macro_f1 <- mean(c(f1_diabetes, f1_no_diabetes))
+
+# AUC for Diabetes
+model_roc <- roc(response = y_test, predictor = model_prob)
+model_auc <- as.numeric(model_roc$auc)
+
+cat("Accuracy is:     ", round(model_accuracy, 4), "\n")
+cat("Macro F1 score is:", round(model_macro_f1, 4), "\n")
+cat("ROC AUC (Binary) is:", round(model_auc, 4), "\n")
+```
+
+Confusion matrix heatmap
+```{r}
+model_cm_table <- cm$table
+
+model_cm_df <- as.data.frame(model_cm_table) |>
+  rename(True = Reference, Predicted = Prediction, Count = Freq)
+
+p_heatmap <- ggplot(model_cm_df, aes(x = Predicted, y = True, fill = Count)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = Count), color = "black", size = 5) +
+  scale_fill_gradient(low = "#e0f2f1", high = "#00796b") +
+  labs(
+    title = "Confusion Matrix Heatmap - Random Forest", 
+    x = "Predicted Class", 
+    y = "True Class"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+print(p_heatmap)
+```
+
+ROC curve
+```{r}
+plot(model_roc, 
+     col = "darkred", 
+     main = "ROC Curve - Binary Random Forest", 
+     lwd = 2)
+
+abline(a = 0, b = 1, lty = 2, col = "grey50") 
+
+legend(
+  "bottomright",
+  legend = c(
+    paste0("Diabetes vs No Diabetes (AUC=", round(model_auc, 3), ")"),
+    paste0("Accuracy=", round(model_accuracy, 3)),
+    paste0("Macro F1 Score=", round(model_macro_f1, 3))
+  ),
+  col = c("darkred", rep(NA, 2)),
+  lwd = c(2, rep(NA, 2))
+)
+```
+
+Variable importance
+```{r}
+importance_df <- data.frame(
+  Variable = names(rf_model$variable.importance),
+  Importance = rf_model$variable.importance
+) |>
+  arrange(desc(Importance))
+
+ggplot(importance_df[1:15, ], aes(x = reorder(Variable, Importance), y = Importance)) +
+  geom_col(fill = "#00796b") +
+  coord_flip() +
+  labs(title = "Top 15 Variable Importances (Random Forest)",
+       x = "Variable",
+       y = "Importance") +
   theme_minimal(base_size = 14)
 ```

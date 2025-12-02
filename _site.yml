@@ -13,12 +13,12 @@ navbar:
       href: data.html
     - text: "EDA"
       href: EDA.html
-    - text: "Analysis"
-      href: analysis.html
-    - text: "Discussion"
-      href: discussion.html
     - text: "Prediction"
       href: prediction.html
+    - text: "Analysis"
+      href: logistic_regression_xgboost.html
+    - text: "Discussion"
+      href: discussion.html
     - icon: fa-envelope fa-lg
       href: mailto:<vy2196@cumc.columbia.edu>
     - icon: fa-github fa-lg

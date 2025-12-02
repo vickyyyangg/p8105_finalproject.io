@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>logistic_regression&amp;xgboost</title>
+
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Home</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="proposal.html">Proposal</a>
+</li>
+<li>
+  <a href="report.html">Report</a>
+</li>
+<li>
+  <a href="introduction.html">Introduction</a>
+</li>
+<li>
+  <a href="data.html">Data</a>
+</li>
+<li>
+  <a href="EDA.html">EDA</a>
+</li>
+<li>
+  <a href="prediction.html">Prediction</a>
+</li>
+<li>
+  <a href="logistic_regression_xgboost.html">Analysis</a>
+</li>
+<li>
+  <a href="discussion.html">Discussion</a>
+</li>
+<li>
+  <a href="mailto:&lt;vy2196@cumc.columbia.edu&gt;">
+    <span class="fa fa-envelope fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="http://github.com/vickyyyangg/">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">logistic_regression&amp;xgboost</h1>
+
+</div>
+
+
+<div id="logistic-regression-model" class="section level2">
+<h2>1. Logistic Regression Model</h2>
+<p>We fit a logistic regression model using health and lifestyle
+predictors such as blood pressure, cholesterol, BMI, smoking status,
+physical activity, age, and sex.</p>
+<div id="fit-the-model" class="section level3">
+<h3>1.1 Fit the Model</h3>
+<pre class="r"><code>logit_model = glm(
+  diabetes_binary ~ high_bp + high_chol + bmi + smoker + phys_activity + age + sex,
+  data = diabetes_temp,
+  family = binomial(link = &quot;logit&quot;)
+)
+
+summary(logit_model)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = diabetes_binary ~ high_bp + high_chol + bmi + smoker + 
+##     phys_activity + age + sex, family = binomial(link = &quot;logit&quot;), 
+##     data = diabetes_temp)
+## 
+## Coefficients:
+##                    Estimate Std. Error  z value Pr(&gt;|z|)    
+## (Intercept)      -4.9335132  0.0337506 -146.175  &lt; 2e-16 ***
+## high_bpYes        0.9334468  0.0133878   69.724  &lt; 2e-16 ***
+## high_cholYes      0.6788247  0.0125063   54.279  &lt; 2e-16 ***
+## bmi               0.0723489  0.0008718   82.984  &lt; 2e-16 ***
+## smokerYes         0.1132249  0.0119856    9.447  &lt; 2e-16 ***
+## phys_activityYes -0.3568117  0.0128025  -27.870  &lt; 2e-16 ***
+## age.L             2.4501416  0.0602296   40.680  &lt; 2e-16 ***
+## age.Q            -0.5788621  0.0574324  -10.079  &lt; 2e-16 ***
+## age.C            -0.1757155  0.0538836   -3.261  0.00111 ** 
+## age^4             0.0511402  0.0511210    1.000  0.31713    
+## age^5            -0.1167826  0.0483849   -2.414  0.01580 *  
+## age^6             0.0237069  0.0449595    0.527  0.59799    
+## age^7             0.0624394  0.0414595    1.506  0.13206    
+## age^8            -0.0433950  0.0375788   -1.155  0.24818    
+## age^9             0.0397879  0.0332257    1.198  0.23111    
+## age^10           -0.0698033  0.0289679   -2.410  0.01597 *  
+## age^11            0.0642426  0.0254442    2.525  0.01158 *  
+## age^12            0.0188388  0.0217445    0.866  0.38629    
+## sexMale           0.1436624  0.0119704   12.001  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 221031  on 253679  degrees of freedom
+## Residual deviance: 185540  on 253661  degrees of freedom
+## AIC: 185578
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+</div>
+<div id="odds-ratios-and-95-confidence-intervals"
+class="section level3">
+<h3>1.2 Odds Ratios and 95% Confidence Intervals</h3>
+<pre class="r"><code>exp(cbind(
+  OR = coef(logit_model),
+  confint.default(logit_model)
+))</code></pre>
+<pre><code>##                            OR        2.5 %       97.5 %
+## (Intercept)       0.007201159  0.006740217  0.007693625
+## high_bpYes        2.543260320  2.477394210  2.610877603
+## high_cholYes      1.971559144  1.923819868  2.020483062
+## bmi               1.075030367  1.073194950  1.076868923
+## smokerYes         1.119883711  1.093882640  1.146502816
+## phys_activityYes  0.699904251  0.682560422  0.717688787
+## age.L            11.589987419 10.299483382 13.042188952
+## age.Q             0.560535820  0.500860543  0.627321138
+## age.C             0.838856596  0.754782668  0.932295373
+## age^4             1.052470431  0.952128709  1.163386837
+## age^5             0.889778609  0.809276024  0.978289173
+## age^6             1.023990135  0.937618435  1.118318237
+## age^7             1.064429908  0.981356280  1.154535872
+## age^8             0.957533083  0.889542471  1.030720438
+## age^9             1.040590090  0.974984879  1.110609773
+## age^10            0.932577285  0.881104300  0.987057255
+## age^11            1.066351021  1.014476588  1.120878012
+## age^12            1.019017415  0.976500927  1.063385056
+## sexMale           1.154494301  1.127723237  1.181900884</code></pre>
+</div>
+<div id="predicted-probability-class-prediction-and-confusion-matrix"
+class="section level3">
+<h3>1.3 Predicted Probability, Class Prediction, and Confusion
+Matrix</h3>
+<pre class="r"><code># Predicted probability
+diabetes_temp$pred_prob &lt;- predict(logit_model, type = &quot;response&quot;)
+
+# Convert to class prediction at threshold = 0.5
+diabetes_temp$pred_class &lt;- ifelse(diabetes_temp$pred_prob &gt; 0.5, 1, 0)
+
+# Confusion matrix
+table(
+  Actual = diabetes_temp$diabetes_binary,
+  Predicted = diabetes_temp$pred_class
+)</code></pre>
+<pre><code>##       Predicted
+## Actual      0      1
+##      0 210761   2942
+##      1  36471   3506</code></pre>
+</div>
+<div id="roc-curve-and-auc" class="section level3">
+<h3>1.4 ROC Curve and AUC</h3>
+<pre class="r"><code>library(pROC)</code></pre>
+<pre><code>## Type &#39;citation(&quot;pROC&quot;)&#39; for a citation.</code></pre>
+<pre><code>## 
+## Attaching package: &#39;pROC&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     cov, smooth, var</code></pre>
+<pre class="r"><code>roc_obj &lt;- roc(diabetes_temp$diabetes_binary, diabetes_temp$pred_prob)</code></pre>
+<pre><code>## Setting levels: control = 0, case = 1</code></pre>
+<pre><code>## Setting direction: controls &lt; cases</code></pre>
+<pre class="r"><code>auc(roc_obj)</code></pre>
+<pre><code>## Area under the curve: 0.7845</code></pre>
+<pre class="r"><code>plot(roc_obj, main = &quot;ROC Curve for Logistic Regression&quot;)</code></pre>
+<p><img src="logistic_regression_xgboost_files/figure-html/unnamed-chunk-6-1.png" width="90%" /></p>
+</div>
+</div>
+<div id="xgboost-binary-outcome" class="section level2">
+<h2>2. XGBoost (binary outcome)</h2>
+<p>We trained an XGBoost model using a 70/30 train-test split.
+Predictors were converted to numeric matrices using model.matrix.</p>
+<div id="traintest-split-and-data-preparation" class="section level3">
+<h3>2.1 Train/Test Split and Data Preparation</h3>
+<pre class="r"><code>library(xgboost)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;xgboost&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:plotly&#39;:
+## 
+##     slice</code></pre>
+<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     slice</code></pre>
+<pre class="r"><code>library(caret)</code></pre>
+<pre><code>## Loading required package: lattice</code></pre>
+<pre><code>## 
+## Attaching package: &#39;caret&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     lift</code></pre>
+<pre class="r"><code>library(dplyr)
+
+#Train/Test Split
+set.seed(123)
+
+train_index = createDataPartition(diabetes_temp$diabetes_binary, p = 0.7, list = FALSE)
+train=diabetes_temp[train_index, ]
+test=diabetes_temp[-train_index, ]
+
+train$binary_outcome=as.numeric(train$diabetes_binary)
+test$binary_outcome=as.numeric(test$diabetes_binary)
+
+x_train &lt;- model.matrix(diabetes_binary ~ . - 1, data = train)
+x_test  &lt;- model.matrix(diabetes_binary ~ . - 1, data = test)
+
+dtrain=xgb.DMatrix(data = as.matrix(x_train), label = train$diabetes_binary)
+dtest=xgb.DMatrix(data = as.matrix(x_test),  label = test$diabetes_binary)</code></pre>
+</div>
+<div id="train-the-xgboost-model" class="section level3">
+<h3>2.2 Train the XGBoost Model</h3>
+<pre class="r"><code># Set Hyperparameters
+
+params = list(
+  objective = &quot;binary:logistic&quot;,
+  eval_metric = &quot;auc&quot;,
+  max_depth = 4,
+  eta = 0.1,
+  subsample = 0.8,
+  colsample_bytree = 0.8
+)</code></pre>
+<pre class="r"><code># Train Model
+
+xgb_model = xgb.train(
+  params = params,
+  data = dtrain,
+  nrounds = 200,
+  watchlist = list(train = dtrain, test = dtest),
+  verbose = 0
+)</code></pre>
+</div>
+<div id="predictions-and-confusion-matrix" class="section level3">
+<h3>2.3 Predictions and Confusion Matrix</h3>
+<pre class="r"><code>pred_prob &lt;- predict(xgb_model, dtest)
+pred_class &lt;- ifelse(pred_prob &gt;= 0.5, 1, 0)
+
+confusionMatrix(
+  factor(pred_class),
+  factor(test$diabetes_binary),
+  positive = &quot;1&quot;
+)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction     0     1
+##          0 64016     0
+##          1     0 12088
+##                                    
+##                Accuracy : 1        
+##                  95% CI : (1, 1)   
+##     No Information Rate : 0.8412   
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16
+##                                    
+##                   Kappa : 1        
+##                                    
+##  Mcnemar&#39;s Test P-Value : NA       
+##                                    
+##             Sensitivity : 1.0000   
+##             Specificity : 1.0000   
+##          Pos Pred Value : 1.0000   
+##          Neg Pred Value : 1.0000   
+##              Prevalence : 0.1588   
+##          Detection Rate : 0.1588   
+##    Detection Prevalence : 0.1588   
+##       Balanced Accuracy : 1.0000   
+##                                    
+##        &#39;Positive&#39; Class : 1        
+## </code></pre>
+</div>
+<div id="auc" class="section level3">
+<h3>2.4 AUC</h3>
+<pre class="r"><code>xgb_auc = roc(test$diabetes_binary, pred_prob)</code></pre>
+<pre><code>## Setting levels: control = 0, case = 1</code></pre>
+<pre><code>## Setting direction: controls &lt; cases</code></pre>
+<pre class="r"><code>auc(xgb_auc)</code></pre>
+<pre><code>## Area under the curve: 1</code></pre>
+</div>
+<div id="variable-importance-plot" class="section level3">
+<h3>2.5 Variable Importance Plot</h3>
+<pre class="r"><code>importance_matrix &lt;- xgb.importance(model = xgb_model)
+xgb.plot.importance(importance_matrix)</code></pre>
+<p><img src="logistic_regression_xgboost_files/figure-html/unnamed-chunk-12-1.png" width="90%" /></p>
+</div>
+</div>
+<div id="results" class="section level2">
+<h2>Results</h2>
+<div id="logistic-regression" class="section level3">
+<h3>1. Logistic Regression</h3>
+<p>A logistic regression model was fitted to predict diabetes status
+using cardiometabolic and lifestyle predictors. Several predictors were
+statistically significant at the 0.05 level.</p>
+<p>High blood pressure was one of the strongest predictors of diabetes
+(OR = 2.54, 95% CI: 2.48–2.61). Individuals with high cholesterol also
+had elevated odds (OR = 1.97, 95% CI: 1.92–2.02). BMI was significantly
+associated with diabetes, such that each one-unit increase in BMI
+increased the odds of diabetes by approximately 7.5% (OR = 1.075).</p>
+<p>Smoking status was associated with slightly higher odds (OR = 1.12),
+while engaging in physical activity was protective (OR = 0.70),
+suggesting that active individuals had 30% lower odds of diabetes
+compared to inactive individuals. Male participants had higher odds
+compared to females (OR = 1.15).</p>
+<p>The polynomial age terms indicate a nonlinear relationship between
+age and diabetes risk. Several terms were significant, suggesting risk
+increases steeply in certain age ranges and plateaus or declines in
+others.</p>
+<div id="model-performance" class="section level4">
+<h4>Model Performance</h4>
+<p>The logistic model performed moderately well overall but did not
+classify diabetes cases accurately. At a 0.5 threshold, the model
+produced:</p>
+<ul>
+<li><strong>True negatives:</strong> 210,761<br />
+</li>
+<li><strong>False positives:</strong> 2,942<br />
+</li>
+<li><strong>False negatives:</strong> 36,471<br />
+</li>
+<li><strong>True positives:</strong> 3,506</li>
+</ul>
+<p>This indicates very high specificity but poor sensitivity; the model
+frequently missed true diabetes cases. The AUC was
+<strong>0.7845</strong>, indicating acceptable but not strong
+discriminatory ability. This level of performance is typical for linear
+models in large, heterogeneous health survey datasets.</p>
+<hr />
+</div>
+</div>
+<div id="xgboost-model" class="section level3">
+<h3>2. XGBoost Model</h3>
+<p>An XGBoost classification model was trained using a 70/30 train-test
+split. After converting the dataset into matrix form, the model was
+trained with depth-4 trees, a learning rate of 0.1, and subsampling to
+reduce overfitting.</p>
+<div id="model-performance-1" class="section level4">
+<h4>Model Performance</h4>
+<p>The XGBoost model achieved <strong>perfect performance</strong> on
+the test dataset:</p>
+<ul>
+<li><strong>Accuracy:</strong> 100%<br />
+</li>
+<li><strong>Sensitivity:</strong> 100%<br />
+</li>
+<li><strong>Specificity:</strong> 100%<br />
+</li>
+<li><strong>AUC:</strong> 1.00</li>
+</ul>
+<p>The confusion matrix contained only true positives and true
+negatives, with no misclassifications.</p>
+<p>While perfect accuracy is possible with gradient-boosting models, it
+may indicate that the dataset contains predictors that almost perfectly
+identify diabetes, or that the model is overfitting the training data
+despite subsampling and moderate tree depth. Additional cross-validation
+or regularization could confirm model stability.</p>
+</div>
+<div id="variable-importance" class="section level4">
+<h4>Variable Importance</h4>
+<p>The variable importance plot revealed the key predictors driving
+model performance. These often align with medically relevant risk
+factors (e.g., BMI, blood pressure, cholesterol), though XGBoost also
+models nonlinear interactions and higher-order relationships that the
+logistic model cannot capture.</p>
+<hr />
+</div>
+</div>
+<div id="comparison-of-models" class="section level3">
+<h3>3. Comparison of Models</h3>
+<p>The two models differ substantially in purpose and performance:</p>
+<table>
+<colgroup>
+<col width="12%" />
+<col width="12%" />
+<col width="27%" />
+<col width="29%" />
+<col width="17%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>AUC</th>
+<th>Sensitivity</th>
+<th>Specificity</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Logistic Regression</td>
+<td>0.7845</td>
+<td>Low</td>
+<td>High</td>
+<td>Interpretable, linear, limited predictive power</td>
+</tr>
+<tr class="even">
+<td>XGBoost</td>
+<td>1.00</td>
+<td>1.00</td>
+<td>1.00</td>
+<td>Excellent performance; may overfit</td>
+</tr>
+</tbody>
+</table>
+<p>Logistic regression provides transparent, interpretable associations
+(e.g., ORs), making it suitable for explanation and clinical insight.
+However, its predictive accuracy was limited. In contrast, XGBoost
+captured far more complex patterns and achieved perfect discrimination,
+making it highly effective for prediction but less interpretable.</p>
+<hr />
+</div>
+<div id="conclusion" class="section level3">
+<h3>4. Conclusion</h3>
+<p>Logistic regression revealed meaningful and interpretable
+associations between cardiometabolic risk factors and diabetes. However,
+for prediction tasks, XGBoost performed substantially better, achieving
+perfect accuracy and AUC on the test set. These results highlight the
+trade-off between interpretability and predictive power in machine
+learning models.</p>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

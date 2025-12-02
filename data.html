@@ -33,6 +33,7 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
@@ -221,6 +222,9 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -339,13 +343,13 @@ div.tocify {
   <a href="EDA.html">EDA</a>
 </li>
 <li>
-  <a href="analysis.html">Analysis</a>
+  <a href="prediction.html">Prediction</a>
+</li>
+<li>
+  <a href="logistic_regression_xgboost.html">Analysis</a>
 </li>
 <li>
   <a href="discussion.html">Discussion</a>
-</li>
-<li>
-  <a href="prediction.html">Prediction</a>
 </li>
 <li>
   <a href="mailto:&lt;vy2196@cumc.columbia.edu&gt;">
@@ -366,6 +370,14 @@ div.tocify {
 
 <div id="header">
 
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
 
 
 <h1 class="title toc-ignore">Data Overview</h1>
@@ -373,8 +385,18 @@ div.tocify {
 </div>
 
 
-<div id="data-sets" class="section level3">
-<h3><b>Data Sets</b></h3>
+<div id="data-source" class="section level3">
+<h3><b>Data Source</b></h3>
+<p>This Kaggle dataset <a
+href="https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset?select=diabetes_binary_5050split_health_indicators_BRFSS2015.csv">Diabetes
+Health Indicators</a> used data collected from Behavioral Risk Factor
+Surveillance System (BRFSS), a health-related telephone survey that is
+collected annually by the CDC. Each year, the survey collects responses
+from over 400,000 Americans on health-related risk behaviors, chronic
+health conditions, and the use of preventative services. It has been
+conducted every year since 1984. This specific dataset was from 2015.
+These features are either questions directly asked of participants, or
+calculated variables based on individual participant responses.</p>
 </div>
 <div id="data-cleaning" class="section level3">
 <h3><b>Data Cleaning</b></h3>
@@ -424,7 +446,7 @@ diabetes =
     education = 
       factor(education, 
              levels = 
-               c(&quot;Never attended school or only kindergarten &quot;,&quot;Grade 1-8&quot;, &quot;Grade 9-11&quot;,
+               c(&quot;Never attended school&quot;,&quot;Grade 1-8&quot;, &quot;Grade 9-11&quot;,
                  &quot;High school graduate&quot;,&quot;College 1-3&quot;,
                  &quot;College graduate&quot;), 
              ordered = TRUE),
@@ -463,10 +485,15 @@ diabetes =
     diabetes_012 = 
       factor(diabetes_012,
              levels = c(0,1,2),
-             labels = c(&quot;No Diabetes&quot;, &quot;Prediabetes&quot;, &quot;Diabetes&quot;))
+             labels = c(&quot;No Diabetes&quot;, &quot;Prediabetes&quot;, &quot;Diabetes&quot;)),
+    diabetes_2 = case_when(
+      diabetes_012 == &quot;No Diabetes&quot; ~ 0,
+      diabetes_012 != &quot;No Diabetes&quot; ~ 1
+    ),
+    diabetes_2 = as.factor(diabetes_2)
   )</code></pre>
 <pre><code>## Rows: 253680 Columns: 22
-## ── Column specification ───────────────────────────────────
+## ── Column specification ───────────────────────────
 ## Delimiter: &quot;,&quot;
 ## dbl (22): Diabetes_012, HighBP, HighChol, CholCheck, BMI, Smoker, Stroke, He...
 ## 
@@ -482,9 +509,45 @@ diabetes =
 diabetes[binary_vars] = lapply(
   diabetes[binary_vars],
   function(x) factor(ifelse(x == 1, &quot;Yes&quot;, &quot;No&quot;))
-)</code></pre>
-<p>Data have 253680 records and 22 variables. Each record contains an
-individual’s BRFSS survey responses.</p>
+)
+
+saveRDS(diabetes, &quot;clean_diabetes_data.rds&quot;)</code></pre>
+<p>Data have 253680 records and 23 variables. Each record corresponds to
+an individual respondent and includes information on demographics,
+health conditions, lifestyle behaviors, and healthcare access.</p>
+<p>In our data cleaning and preprocessing steps, we did the
+following:</p>
+<div id="converted-numeric-codes-into-meaningful-categorical-labels"
+class="section level4">
+<h4>1. Converted numeric codes into meaningful categorical labels</h4>
+<p>For example, the sex variable was coded as 0 and 1. We converted it
+to “Female” and “Male” and then turned it into a factor variable.</p>
+<p>Similarly, age, income, GenHlth(general health) and education were
+originally numeric codes representing ranges or categories. We mapped
+these codes to descriptive labels and and specified ordered factors so
+that analyses respect the natural order of these categories.</p>
+</div>
+<div id="encoded-binary-health-indicators-as-factors"
+class="section level4">
+<h4>2. Encoded binary health indicators as factors</h4>
+<p>Several binary variables, such as high_bp (high blood pressure),
+smoker, and phys_activity (physical activity), were coded as 0 and
+1.</p>
+<p>We converted these to “Yes”/“No” factors to make the dataset more
+interpretable.</p>
+</div>
+<div id="created-a-categorical-target-variable-for-diabetes-status"
+class="section level4">
+<h4>3. Created a categorical target variable for diabetes status</h4>
+<p>The variable <code>diabetes_012</code> indicates whether a person has
+No Diabetes, Prediabetes, or Diabetes. This is a factor with three
+levels. For some analyses, we also created a binary target variable,
+<code>diabetes_2</code>, which groups individuals into two categories:
+non-diabetes and diabetes.</p>
+<p>This binary variable simplifies modeling to predict the presence or
+absence of diabetes, while the original three-level factor can still be
+used for more detailed analyses or exploratory data visualization.</p>
+</div>
 </div>
 <div id="data-summary" class="section level3">
 <h3><b>Data Summary</b></h3>
@@ -504,7 +567,7 @@ skim(diabetes)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">Number of columns</td>
-<td align="left">22</td>
+<td align="left">23</td>
 </tr>
 <tr class="even">
 <td align="left">_______________________</td>
@@ -516,7 +579,7 @@ skim(diabetes)</code></pre>
 </tr>
 <tr class="even">
 <td align="left">factor</td>
-<td align="left">19</td>
+<td align="left">20</td>
 </tr>
 <tr class="odd">
 <td align="left">numeric</td>
@@ -691,10 +754,10 @@ skim(diabetes)</code></pre>
 </tr>
 <tr class="even">
 <td align="left">education</td>
-<td align="right">174</td>
+<td align="right">0</td>
 <td align="right">1</td>
 <td align="left">TRUE</td>
-<td align="right">5</td>
+<td align="right">6</td>
 <td align="left">Col: 107325, Col: 69910, Hig: 62750, Gra: 9478</td>
 </tr>
 <tr class="odd">
@@ -704,6 +767,14 @@ skim(diabetes)</code></pre>
 <td align="left">TRUE</td>
 <td align="right">8</td>
 <td align="left">$75: 90385, $50: 43219, $35: 36470, $25: 25883</td>
+</tr>
+<tr class="even">
+<td align="left">diabetes_2</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">FALSE</td>
+<td align="right">2</td>
+<td align="left">0: 213703, 1: 39977</td>
 </tr>
 </tbody>
 </table>
@@ -783,8 +854,10 @@ skim(diabetes)</code></pre>
 <div id="data-variables" class="section level3">
 <h3><b>Data Variables</b></h3>
 <p>The data variables that will be included in the EDA are:</p>
-<p><code>Diabetes_binary</code>: 0 = no diabetes 1 = prediabetes 2 =
+<p><code>Diabetes_012</code>: 0 = no diabetes 1 = prediabetes 2 =
 diabetes</p>
+<p><code>Diabetes_2</code> : 0 = no diabetes 1 =
+prediabetes/diabetes</p>
 <p><code>HighBP</code>: high blood pressure (0 = no 1 = yes)</p>
 <p><code>HighChol</code>: high cholesterol (0 = no 1 = yes)</p>
 <p><code>CholCheck</code>: cholesterol check in 5 years (0 = no 1 =
@@ -903,6 +976,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
 <script>
 $(document).ready(function ()  {

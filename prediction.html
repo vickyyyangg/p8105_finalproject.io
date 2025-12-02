@@ -11,7 +11,7 @@
 
 
 
-<title>Building A Diabete Prediction Model</title>
+<title>Building Diabetes Prediction Models</title>
 
 <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -263,13 +263,13 @@ $(document).ready(function () {
   <a href="EDA.html">EDA</a>
 </li>
 <li>
-  <a href="analysis.html">Analysis</a>
+  <a href="prediction.html">Prediction</a>
+</li>
+<li>
+  <a href="logistic_regression_xgboost.html">Analysis</a>
 </li>
 <li>
   <a href="discussion.html">Discussion</a>
-</li>
-<li>
-  <a href="prediction.html">Prediction</a>
 </li>
 <li>
   <a href="mailto:&lt;vy2196@cumc.columbia.edu&gt;">
@@ -292,54 +292,44 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Building A Diabete Prediction Model</h1>
+<h1 class="title toc-ignore">Building Diabetes Prediction Models</h1>
 
 </div>
 
 
 <hr />
-<pre class="r"><code>set.seed(1)
-
-diabetes_original = 
-  read_csv(&quot;Diabete datasets/diabetes_012_health_indicators_BRFSS2015.csv&quot;) |&gt;
-  janitor::clean_names() </code></pre>
-<pre><code>## Rows: 253680 Columns: 22
-## ── Column specification ───────────────────────────────────
-## Delimiter: &quot;,&quot;
-## dbl (22): Diabetes_012, HighBP, HighChol, CholCheck, BMI, Smoker, Stroke, He...
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>diabetes_original &lt;- diabetes_original |&gt;
-  mutate(
-    ment_hlth = as.numeric(ment_hlth),
-    phys_hlth = as.numeric(phys_hlth),
-    bmi = as.numeric(bmi),
-    across(
-      .cols = -c(ment_hlth, phys_hlth, bmi),
-      .fns = as.factor
-    )
-  )
-head(diabetes_original)</code></pre>
-<pre><code>## # A tibble: 6 × 22
-##   diabetes_012 high_bp high_chol chol_check   bmi smoker stroke
-##   &lt;fct&gt;        &lt;fct&gt;   &lt;fct&gt;     &lt;fct&gt;      &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt; 
-## 1 0            1       1         1             40 1      0     
-## 2 0            0       0         0             25 1      0     
-## 3 0            1       1         1             28 0      0     
-## 4 0            1       0         1             27 0      0     
-## 5 0            1       1         1             24 0      0     
-## 6 0            1       1         1             25 1      0     
+<div id="model-1-preparation" class="section level1">
+<h1>Model 1 Preparation</h1>
+<pre class="r"><code>df_multilog &lt;- diabetes |&gt;
+  select(diabetes_012, high_bp, high_chol, chol_check, bmi, smoker, stroke, 
+         heart_diseaseor_attack, phys_activity, fruits, veggies, hvy_alcohol_consump,
+         any_healthcare, no_docbc_cost, gen_hlth, ment_hlth, phys_hlth, diff_walk, 
+         sex, age, education, income)
+df_multilog</code></pre>
+<pre><code>## # A tibble: 253,680 × 22
+##    diabetes_012 high_bp high_chol chol_check   bmi smoker stroke
+##    &lt;fct&gt;        &lt;fct&gt;   &lt;fct&gt;     &lt;fct&gt;      &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt; 
+##  1 No Diabetes  Yes     Yes       Yes           40 Yes    No    
+##  2 No Diabetes  No      No        No            25 Yes    No    
+##  3 No Diabetes  Yes     Yes       Yes           28 No     No    
+##  4 No Diabetes  Yes     No        Yes           27 No     No    
+##  5 No Diabetes  Yes     Yes       Yes           24 No     No    
+##  6 No Diabetes  Yes     Yes       Yes           25 Yes    No    
+##  7 No Diabetes  Yes     No        Yes           30 Yes    No    
+##  8 No Diabetes  Yes     Yes       Yes           25 Yes    No    
+##  9 Diabetes     Yes     Yes       Yes           30 Yes    No    
+## 10 No Diabetes  No      No        Yes           24 No     No    
+## # ℹ 253,670 more rows
 ## # ℹ 15 more variables: heart_diseaseor_attack &lt;fct&gt;, phys_activity &lt;fct&gt;,
 ## #   fruits &lt;fct&gt;, veggies &lt;fct&gt;, hvy_alcohol_consump &lt;fct&gt;,
-## #   any_healthcare &lt;fct&gt;, no_docbc_cost &lt;fct&gt;, gen_hlth &lt;fct&gt;, ment_hlth &lt;dbl&gt;,
-## #   phys_hlth &lt;dbl&gt;, diff_walk &lt;fct&gt;, sex &lt;fct&gt;, age &lt;fct&gt;, education &lt;fct&gt;,
-## #   income &lt;fct&gt;</code></pre>
+## #   any_healthcare &lt;fct&gt;, no_docbc_cost &lt;fct&gt;, gen_hlth &lt;ord&gt;, ment_hlth &lt;dbl&gt;,
+## #   phys_hlth &lt;dbl&gt;, diff_walk &lt;fct&gt;, sex &lt;fct&gt;, age &lt;ord&gt;, education &lt;ord&gt;,
+## #   income &lt;ord&gt;</code></pre>
 <p>train/test split</p>
 <pre class="r"><code># using createDataPartition because diabetes_012 is unbalanced based on EDA.
-train_test_split &lt;- createDataPartition(diabetes_original$diabetes_012, p = 0.8, list = FALSE)
-train &lt;- diabetes_original[train_test_split, ]
-test  &lt;- diabetes_original[-train_test_split, ]
+train_test_split &lt;- createDataPartition(df_multilog$diabetes_012, p = 0.8, list = FALSE)
+train &lt;- df_multilog[train_test_split, ]
+test  &lt;- df_multilog[-train_test_split, ]
 
 y_test &lt;- test$diabetes_012</code></pre>
 <p>F1 function for multiclass</p>
@@ -373,20 +363,23 @@ y_test &lt;- test$diabetes_012</code></pre>
   }
     mean(multi_f1_vec)
 }</code></pre>
-<p>Model 1: multinomial logistic regression</p>
+</div>
+<div id="model-1-multinomial-logistic-regression"
+class="section level1">
+<h1>Model 1: Multinomial Logistic Regression</h1>
 <pre class="r"><code>model1 &lt;- multinom(diabetes_012 ~ ., data = train, trace = FALSE)</code></pre>
 <pre class="r"><code>model1_pred &lt;- predict(model1, newdata = test, type = &quot;class&quot;)
 model1_prob &lt;- predict(model1, newdata = test, type = &quot;prob&quot;)
 
 model1_accuracy &lt;- mean(model1_pred == y_test)
 cat(&quot;Accuracy is:&quot;, model1_accuracy, &quot;\n&quot;)</code></pre>
-<pre><code>## Accuracy is: 0.8484478</code></pre>
+<pre><code>## Accuracy is: 0.8481719</code></pre>
 <pre class="r"><code>model1_macro_f1  &lt;- multi_f1(y_test, model1_pred)
 cat(&quot;Macro F1 score is:&quot;, model1_macro_f1, &quot;\n&quot;)</code></pre>
-<pre><code>## Macro F1 score is: 0.3918423</code></pre>
+<pre><code>## Macro F1 score is: 0.39549</code></pre>
 <pre class="r"><code>model1__macro_auc &lt;- as.numeric(multiclass.roc(response = y_test, predictor = model1_prob)$auc)
 cat(&quot;Macro AUC is:&quot;, model1__macro_auc, &quot;\n&quot;)</code></pre>
-<pre><code>## Macro AUC is: 0.700909</code></pre>
+<pre><code>## Macro AUC is: 0.6955571</code></pre>
 <p>ROC</p>
 <pre class="r"><code>cols &lt;- c(&quot;blue&quot;, &quot;green&quot;, &quot;pink&quot;)
 
@@ -434,6 +427,153 @@ ggplot(model1_cm_df, aes(x = Predicted, y = True, fill = Count)) +
   labs(title = &quot;Confusion Matrix Heatmap - Multi Log Regression&quot;, x = &quot;Predicted&quot;, y = &quot;True&quot;) +
   theme_minimal(base_size = 14)</code></pre>
 <p><img src="prediction_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+</div>
+<div id="model-2-preparation" class="section level1">
+<h1>Model 2 Preparation</h1>
+<pre class="r"><code>df_ranger &lt;- diabetes |&gt;
+  select(diabetes_2, high_bp, high_chol, chol_check, bmi, smoker, stroke, 
+         heart_diseaseor_attack, phys_activity, fruits, veggies, hvy_alcohol_consump,
+         any_healthcare, no_docbc_cost, gen_hlth, ment_hlth, phys_hlth, diff_walk, 
+         sex, age, education, income)
+
+df_ranger$diabetes_2 &lt;- factor(df_ranger$diabetes_2, 
+                              levels = c(0, 1), 
+                              labels = c(&quot;No_Diabetes&quot;, &quot;Diabetes&quot;))
+df_ranger</code></pre>
+<pre><code>## # A tibble: 253,680 × 22
+##    diabetes_2  high_bp high_chol chol_check   bmi smoker stroke
+##    &lt;fct&gt;       &lt;fct&gt;   &lt;fct&gt;     &lt;fct&gt;      &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt; 
+##  1 No_Diabetes Yes     Yes       Yes           40 Yes    No    
+##  2 No_Diabetes No      No        No            25 Yes    No    
+##  3 No_Diabetes Yes     Yes       Yes           28 No     No    
+##  4 No_Diabetes Yes     No        Yes           27 No     No    
+##  5 No_Diabetes Yes     Yes       Yes           24 No     No    
+##  6 No_Diabetes Yes     Yes       Yes           25 Yes    No    
+##  7 No_Diabetes Yes     No        Yes           30 Yes    No    
+##  8 No_Diabetes Yes     Yes       Yes           25 Yes    No    
+##  9 Diabetes    Yes     Yes       Yes           30 Yes    No    
+## 10 No_Diabetes No      No        Yes           24 No     No    
+## # ℹ 253,670 more rows
+## # ℹ 15 more variables: heart_diseaseor_attack &lt;fct&gt;, phys_activity &lt;fct&gt;,
+## #   fruits &lt;fct&gt;, veggies &lt;fct&gt;, hvy_alcohol_consump &lt;fct&gt;,
+## #   any_healthcare &lt;fct&gt;, no_docbc_cost &lt;fct&gt;, gen_hlth &lt;ord&gt;, ment_hlth &lt;dbl&gt;,
+## #   phys_hlth &lt;dbl&gt;, diff_walk &lt;fct&gt;, sex &lt;fct&gt;, age &lt;ord&gt;, education &lt;ord&gt;,
+## #   income &lt;ord&gt;</code></pre>
+</div>
+<div id="model-2-binary-rangerrandomforest-model"
+class="section level1">
+<h1>Model 2: Binary Ranger/RandomForest Model</h1>
+<p>Data splitting</p>
+<pre class="r"><code>set.seed(1) 
+
+index &lt;- createDataPartition(df_ranger$diabetes_2, p = 0.8, list = FALSE)
+train_data &lt;- df_ranger[index, ]
+test_data &lt;- df_ranger[-index, ]
+
+y_test &lt;- test_data$diabetes_2</code></pre>
+<p>Train Binary Random Forest Model (using ranger)</p>
+<pre class="r"><code>rf_model &lt;- ranger(
+  dependent.variable.name = &quot;diabetes_2&quot;, 
+  data = train_data,
+  num.trees = 500,
+  importance = &quot;impurity&quot;,
+  seed = 1,
+  verbose = TRUE,
+  probability = TRUE
+)</code></pre>
+<pre><code>## Growing trees.. Progress: 43%. Estimated remaining time: 40 seconds.
+## Growing trees.. Progress: 89%. Estimated remaining time: 7 seconds.</code></pre>
+<p>Prediction and Metrics</p>
+<pre class="r"><code>pred &lt;- predict(rf_model, data = test_data, type = &quot;response&quot;)
+
+# Probability of Diabetes (positive class)
+model_prob &lt;- pred$predictions[, &quot;Diabetes&quot;]
+
+# Class predictions = class with highest probability
+model_pred &lt;- colnames(pred$predictions)[ max.col(pred$predictions) ]
+model_pred &lt;- factor(model_pred, levels = levels(y_test))
+
+# Confusion matrix
+cm &lt;- confusionMatrix(model_pred, y_test)
+
+# Accuracy
+model_accuracy &lt;- as.numeric(cm$overall[&#39;Accuracy&#39;])
+
+# F1 for Diabetes
+f1_diabetes &lt;- as.numeric(cm$byClass[&#39;F1&#39;])
+# F1 for No_Diabetes
+cm_rev &lt;- confusionMatrix(model_pred, y_test, positive = &quot;No_Diabetes&quot;)
+f1_no_diabetes &lt;- as.numeric(cm_rev$byClass[&#39;F1&#39;])
+# Macro F1
+model_macro_f1 &lt;- mean(c(f1_diabetes, f1_no_diabetes))
+
+# AUC for Diabetes
+model_roc &lt;- roc(response = y_test, predictor = model_prob)</code></pre>
+<pre><code>## Setting levels: control = No_Diabetes, case = Diabetes</code></pre>
+<pre><code>## Setting direction: controls &lt; cases</code></pre>
+<pre class="r"><code>model_auc &lt;- as.numeric(model_roc$auc)
+
+cat(&quot;Accuracy is:     &quot;, round(model_accuracy, 4), &quot;\n&quot;)</code></pre>
+<pre><code>## Accuracy is:      0.8523</code></pre>
+<pre class="r"><code>cat(&quot;Macro F1 score is:&quot;, round(model_macro_f1, 4), &quot;\n&quot;)</code></pre>
+<pre><code>## Macro F1 score is: 0.9177</code></pre>
+<pre class="r"><code>cat(&quot;ROC AUC (Binary) is:&quot;, round(model_auc, 4), &quot;\n&quot;)</code></pre>
+<pre><code>## ROC AUC (Binary) is: 0.8195</code></pre>
+<p>Confusion matrix heatmap</p>
+<pre class="r"><code>model_cm_table &lt;- cm$table
+
+model_cm_df &lt;- as.data.frame(model_cm_table) |&gt;
+  rename(True = Reference, Predicted = Prediction, Count = Freq)
+
+p_heatmap &lt;- ggplot(model_cm_df, aes(x = Predicted, y = True, fill = Count)) +
+  geom_tile(color = &quot;white&quot;) +
+  geom_text(aes(label = Count), color = &quot;black&quot;, size = 5) +
+  scale_fill_gradient(low = &quot;#e0f2f1&quot;, high = &quot;#00796b&quot;) +
+  labs(
+    title = &quot;Confusion Matrix Heatmap - Random Forest&quot;, 
+    x = &quot;Predicted Class&quot;, 
+    y = &quot;True Class&quot;
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+print(p_heatmap)</code></pre>
+<p><img src="prediction_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p>ROC curve</p>
+<pre class="r"><code>plot(model_roc, 
+     col = &quot;darkred&quot;, 
+     main = &quot;ROC Curve - Binary Random Forest&quot;, 
+     lwd = 2)
+
+abline(a = 0, b = 1, lty = 2, col = &quot;grey50&quot;) 
+
+legend(
+  &quot;bottomright&quot;,
+  legend = c(
+    paste0(&quot;Diabetes vs No Diabetes (AUC=&quot;, round(model_auc, 3), &quot;)&quot;),
+    paste0(&quot;Accuracy=&quot;, round(model_accuracy, 3)),
+    paste0(&quot;Macro F1 Score=&quot;, round(model_macro_f1, 3))
+  ),
+  col = c(&quot;darkred&quot;, rep(NA, 2)),
+  lwd = c(2, rep(NA, 2))
+)</code></pre>
+<p><img src="prediction_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p>Variable importance</p>
+<pre class="r"><code>importance_df &lt;- data.frame(
+  Variable = names(rf_model$variable.importance),
+  Importance = rf_model$variable.importance
+) |&gt;
+  arrange(desc(Importance))
+
+ggplot(importance_df[1:15, ], aes(x = reorder(Variable, Importance), y = Importance)) +
+  geom_col(fill = &quot;#00796b&quot;) +
+  coord_flip() +
+  labs(title = &quot;Top 15 Variable Importances (Random Forest)&quot;,
+       x = &quot;Variable&quot;,
+       y = &quot;Importance&quot;) +
+  theme_minimal(base_size = 14)</code></pre>
+<p><img src="prediction_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+</div>
 
 
 

@@ -3,11 +3,12 @@ title: "Data Overview"
 output: 
   html_document:
     toc: true
+    code_folding: hide
     toc_float: true
     theme: cosmo
 ---
-### <b>Data Sets</b>
-
+### <b>Data Source</b>
+This Kaggle dataset [Diabetes Health Indicators](https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset?select=diabetes_binary_5050split_health_indicators_BRFSS2015.csv) used data collected from Behavioral Risk Factor Surveillance System (BRFSS), a health-related telephone survey that is collected annually by the CDC. Each year, the survey collects responses from over 400,000 Americans on health-related risk behaviors, chronic health conditions, and the use of preventative services. It has been conducted every year since 1984. This specific dataset was from 2015. These features are either questions directly asked of participants, or calculated variables based on individual participant responses.
 
 ### <b>Data Cleaning</b>
 
@@ -84,7 +85,7 @@ diabetes =
     education = 
       factor(education, 
              levels = 
-               c("Never attended school or only kindergarten ","Grade 1-8", "Grade 9-11",
+               c("Never attended school","Grade 1-8", "Grade 9-11",
                  "High school graduate","College 1-3",
                  "College graduate"), 
              ordered = TRUE),
@@ -123,7 +124,12 @@ diabetes =
     diabetes_012 = 
       factor(diabetes_012,
              levels = c(0,1,2),
-             labels = c("No Diabetes", "Prediabetes", "Diabetes"))
+             labels = c("No Diabetes", "Prediabetes", "Diabetes")),
+    diabetes_2 = case_when(
+      diabetes_012 == "No Diabetes" ~ 0,
+      diabetes_012 != "No Diabetes" ~ 1
+    ),
+    diabetes_2 = as.factor(diabetes_2)
   )
   
 binary_vars = c(
@@ -138,10 +144,33 @@ diabetes[binary_vars] = lapply(
   function(x) factor(ifelse(x == 1, "Yes", "No"))
 )
 
+saveRDS(diabetes, "clean_diabetes_data.rds")
 ```
 
 
-Data have `r nrow(diabetes)` records and `r ncol(diabetes)` variables. Each record contains an individual's BRFSS survey responses.
+Data have `r nrow(diabetes)` records and `r ncol(diabetes)` variables.
+Each record corresponds to an individual respondent and includes information on demographics, health conditions, lifestyle behaviors, and healthcare access. 
+
+In our data cleaning and preprocessing steps, we did the following:
+
+#### 1. Converted numeric codes into meaningful categorical labels
+
+For example, the sex variable was coded as 0 and 1. We converted it to "Female" and "Male" and then turned it into a factor variable.
+
+Similarly, age, income, GenHlth(general health) and education were originally numeric codes representing ranges or categories. We mapped these codes to descriptive labels and and specified ordered factors so that analyses respect the natural order of these categories.
+
+#### 2. Encoded binary health indicators as factors
+
+Several binary variables, such as high_bp (high blood pressure), smoker, and phys_activity (physical activity), were coded as 0 and 1.
+
+We converted these to "Yes"/"No" factors to make the dataset more interpretable.
+
+#### 3. Created a categorical target variable for diabetes status
+
+The variable `diabetes_012` indicates whether a person has No Diabetes, Prediabetes, or Diabetes. This is a factor with three levels. For some analyses, we also created a binary target variable, `diabetes_2`, which groups individuals into two categories: non-diabetes and diabetes.
+
+This binary variable simplifies modeling to predict the presence or absence of diabetes, while the original three-level factor can still be used for more detailed analyses or exploratory data visualization.
+
 
 ### <b>Data Summary</b>
 ```{r}
@@ -154,7 +183,9 @@ skim(diabetes)
 ### <b>Data Variables</b>
 The data variables that will be included in the EDA are:
 
-`Diabetes_binary`: 0 = no diabetes 1 = prediabetes 2 = diabetes
+`Diabetes_012`: 0 = no diabetes 1 = prediabetes 2 = diabetes
+
+`Diabetes_2` : 0 = no diabetes 1 = prediabetes/diabetes
 
 `HighBP`: high blood pressure (0 = no 1 = yes)
 
