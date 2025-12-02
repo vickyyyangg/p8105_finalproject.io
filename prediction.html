@@ -266,10 +266,7 @@ $(document).ready(function () {
   <a href="prediction.html">Prediction</a>
 </li>
 <li>
-  <a href="logistic_regression_xgboost.html">Analysis</a>
-</li>
-<li>
-  <a href="chi_test.html">Characteristics</a>
+  <a href="chi_test.html">Analysis</a>
 </li>
 <li>
   <a href="discussion.html">Discussion</a>
@@ -497,8 +494,7 @@ class="section level3">
   verbose = TRUE,
   probability = TRUE
 )</code></pre>
-<pre><code>## Growing trees.. Progress: 46%. Estimated remaining time: 36 seconds.
-## Growing trees.. Progress: 92%. Estimated remaining time: 5 seconds.</code></pre>
+<pre><code>## Growing trees.. Progress: 65%. Estimated remaining time: 16 seconds.</code></pre>
 </div>
 <div id="prediction-and-metrics" class="section level3">
 <h3>2.3 Prediction and Metrics</h3>
@@ -817,140 +813,6 @@ confusionMatrix(
 <pre class="r"><code>importance_matrix &lt;- xgb.importance(model = xgb_model)
 xgb.plot.importance(importance_matrix)</code></pre>
 <p><img src="prediction_files/figure-html/unnamed-chunk-27-1.png" width="672" /></p>
-</div>
-</div>
-<div id="results" class="section level2">
-<h2>Results</h2>
-<div id="logistic-regression" class="section level3">
-<h3>1. Logistic Regression</h3>
-<p>A logistic regression model was fitted to predict diabetes status
-using cardiometabolic and lifestyle predictors. Several predictors were
-statistically significant at the 0.05 level.</p>
-<p>High blood pressure was one of the strongest predictors of diabetes
-(OR = 2.54, 95% CI: 2.48–2.61). Individuals with high cholesterol also
-had elevated odds (OR = 1.97, 95% CI: 1.92–2.02). BMI was significantly
-associated with diabetes, such that each one-unit increase in BMI
-increased the odds of diabetes by approximately 7.5% (OR = 1.075).</p>
-<p>Smoking status was associated with slightly higher odds (OR = 1.12),
-while engaging in physical activity was protective (OR = 0.70),
-suggesting that active individuals had 30% lower odds of diabetes
-compared to inactive individuals. Male participants had higher odds
-compared to females (OR = 1.15).</p>
-<p>The polynomial age terms indicate a nonlinear relationship between
-age and diabetes risk. Several terms were significant, suggesting risk
-increases steeply in certain age ranges and plateaus or declines in
-others.</p>
-<div id="model-performance" class="section level4">
-<h4>Model Performance</h4>
-<p>The logistic model performed moderately well overall but did not
-classify diabetes cases accurately. At a 0.5 threshold, the model
-produced:</p>
-<ul>
-<li><strong>True negatives:</strong> 210,761<br />
-</li>
-<li><strong>False positives:</strong> 2,942<br />
-</li>
-<li><strong>False negatives:</strong> 36,471<br />
-</li>
-<li><strong>True positives:</strong> 3,506</li>
-</ul>
-<p>This indicates very high specificity but poor sensitivity; the model
-frequently missed true diabetes cases. The AUC was
-<strong>0.7845</strong>, indicating acceptable but not strong
-discriminatory ability. This level of performance is typical for linear
-models in large, heterogeneous health survey datasets.</p>
-<hr />
-</div>
-</div>
-<div id="xgboost-model" class="section level3">
-<h3>2. XGBoost Model</h3>
-<p>An XGBoost classification model was trained using a 70/30 train-test
-split. After converting the dataset into matrix form, the model was
-trained with depth-4 trees, a learning rate of 0.1, and subsampling to
-reduce overfitting.</p>
-<div id="model-performance-1" class="section level4">
-<h4>Model Performance</h4>
-<p>The XGBoost model achieved <strong>perfect performance</strong> on
-the test dataset:</p>
-<ul>
-<li><strong>Accuracy:</strong> 100%<br />
-</li>
-<li><strong>Sensitivity:</strong> 100%<br />
-</li>
-<li><strong>Specificity:</strong> 100%<br />
-</li>
-<li><strong>AUC:</strong> 1.00</li>
-</ul>
-<p>The confusion matrix contained only true positives and true
-negatives, with no misclassifications.</p>
-<p>While perfect accuracy is possible with gradient-boosting models, it
-may indicate that the dataset contains predictors that almost perfectly
-identify diabetes, or that the model is overfitting the training data
-despite subsampling and moderate tree depth. Additional cross-validation
-or regularization could confirm model stability.</p>
-</div>
-<div id="variable-importance-1" class="section level4">
-<h4>Variable Importance</h4>
-<p>The variable importance plot revealed the key predictors driving
-model performance. These often align with medically relevant risk
-factors (e.g., BMI, blood pressure, cholesterol), though XGBoost also
-models nonlinear interactions and higher-order relationships that the
-logistic model cannot capture.</p>
-<hr />
-</div>
-</div>
-<div id="comparison-of-models" class="section level3">
-<h3>3. Comparison of Models</h3>
-<p>The two models differ substantially in purpose and performance:</p>
-<table>
-<colgroup>
-<col width="12%" />
-<col width="12%" />
-<col width="27%" />
-<col width="29%" />
-<col width="17%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Model</th>
-<th>AUC</th>
-<th>Sensitivity</th>
-<th>Specificity</th>
-<th>Notes</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Logistic Regression</td>
-<td>0.7845</td>
-<td>Low</td>
-<td>High</td>
-<td>Interpretable, linear, limited predictive power</td>
-</tr>
-<tr class="even">
-<td>XGBoost</td>
-<td>1.00</td>
-<td>1.00</td>
-<td>1.00</td>
-<td>Excellent performance; may overfit</td>
-</tr>
-</tbody>
-</table>
-<p>Logistic regression provides transparent, interpretable associations
-(e.g., ORs), making it suitable for explanation and clinical insight.
-However, its predictive accuracy was limited. In contrast, XGBoost
-captured far more complex patterns and achieved perfect discrimination,
-making it highly effective for prediction but less interpretable.</p>
-<hr />
-</div>
-<div id="conclusion" class="section level3">
-<h3>4. Conclusion</h3>
-<p>Logistic regression revealed meaningful and interpretable
-associations between cardiometabolic risk factors and diabetes. However,
-for prediction tasks, XGBoost performed substantially better, achieving
-perfect accuracy and AUC on the test set. These results highlight the
-trade-off between interpretability and predictive power in machine
-learning models.</p>
 </div>
 </div>
 

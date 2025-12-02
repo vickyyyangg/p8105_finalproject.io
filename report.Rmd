@@ -13,15 +13,15 @@ output:
 *Yvonne Xie, Rosie Kwon, Vicky Yang, Yiying Chen, Charlotte Zhang*
 
 
-## Introduction
+# 1. Introduction
 ```{r child="introduction.Rmd"}
 ```
 
-## Data
+# 2. Data
 ```{r child="Data.Rmd"}
 ```
 
-## Exploratory Data Analysis
+# 3. Exploratory Data Analysis
 
 ```{r, include = FALSE, message = FALSE, warning = FALSE}
 # Load required libraries
@@ -159,7 +159,287 @@ ggplot(diabetes, aes(y = income, fill = diabetes_binary))+
 
 The proportional plot indicates an inverse relationship between income and diabetes prevalence. Individuals with lower income levels show a higher proportion of diabetes, whereas those with higher income levels have a noticeably lower diabetes proportion.
 
-## Characteristics analysis
+### 4) BMI 
+
+The mean BMI is `r round(mean(diabetes$bmi),3)` which falls within the overweight category. 
+
+```{r}
+diabetes |> 
+  plot_ly(
+    x = ~diabetes_binary,
+    y = ~bmi,
+    type = "violin",
+    color = ~diabetes_binary,
+    colors = c("skyblue","tomato"),
+    box = list(visible = TRUE),
+    meanline = list(visible = TRUE)
+  ) |> 
+  layout(
+    title = "BMI Distribution by Diabetes Status",
+    xaxis = list(title = "Diabetes Status"),
+    yaxis = list(title = "BMI")
+  )
+
+```
+
+Individuals with diabetes (median = 31.8) have noticeably higher BMI values compared to those without diabetes (median = 27.7). The pattern is consistent with established clinical evidence that higher BMI is a major risk factor for diabetes.
+
+
+>The variables are separated into three main parts: clinical conditions, lifestyle, and access to healthcare / function.
+
+
+## <b>Clinical Conditions</b>
+
+Clinical conditions include high blood pressure, high cholesterol, history of stroke, a history of heart disease or heart attack, mental health and physical health. The chart below shows the proportions of participants who reported each condition and whether they also have diabetes. 
+
+```{r}
+clinical_vars = c("high_bp", "high_chol", "stroke", "heart_diseaseor_attack")
+
+diabetes_long =
+  diabetes |> 
+  pivot_longer(cols = all_of(clinical_vars),
+               names_to = "variable",
+               values_to = "response")
+
+title_map = c(
+  high_chol = "High Cholesterol Status",
+  high_bp = "High Blood Pressure",
+  stroke = "History of Stroke",
+  heart_diseaseor_attack = "Heart Disease or Attack"
+)
+
+col_names = names(title_map)
+
+p =
+  ggplot(diabetes_long, aes(x = diabetes_binary, fill = response)) +
+  geom_bar(position = "fill", width = 0.7) +
+  facet_wrap(
+    ~ variable, 
+    ncol = 2,
+    labeller = labeller(variable = title_map)
+  ) +
+  labs(
+    title = "Clinical Condition by Diabetes Status",
+    x = "Diabetes Status",
+    y = "Proportion"
+  ) +
+  theme_minimal()
+
+ggplotly(p)
+
+
+```
+The proportions show that there is a strong relationship between each clinical condition and diabetes status. For individuals who reported having a specific condition, the proportion with diabetes is significantly higher than the proportion without diabetes. Among these conditions, high blood pressure is associated with the highest proportion of diabetes, at approximately 0.738. Conversely, a history of stroke is linked to the lowest observed proportion, at about 0.088.
+
+### Mental Health 
+
+The mean of the number of days in the past month during which an individual reported poor mental health is `r round(mean(diabetes$ment_hlth),3)`.
+
+
+```{r,error=FALSE}
+diabetes |> 
+  ggplot(aes(x = ment_hlth))+
+  geom_histogram()
+```
+
+Most of participants reported 0 mentally unhealthy days with a steep decline in frequency as the number of days increases. Only a relatively small portion of respondents reported persistent mental distress approaching the upper bound of the scale (20–30 days). 
+
+
+```{r}
+diabetes = 
+  diabetes |> 
+  mutate(
+    mental = case_when(
+      ment_hlth == 0 ~ "0 days",
+      ment_hlth >= 1 & ment_hlth <= 13 ~ "1-13 days",
+      ment_hlth >= 14 ~ "14+ days"
+    ),
+    mental = factor(mental, levels = c("0 days", "1-13 days", "14+ days"))
+  )
+
+```
+
+According to the CDC, an individual has frequent mental distress when they feel emotionally unhealthy, or very sad, anxious, or troubled, for at least 14 out of 30 days. Following this guideline, we categorized `ment_hlth` variable into 3 different levels : 0 days, 1-13 days, and 14+ days.
+
+```{r}
+diabetes |> 
+  ggplot(aes(x = mental, fill = diabetes_binary)) +
+  geom_bar(position = "dodge") +
+  scale_fill_manual(values = c(
+    "No Diabetes" = "lightgreen",
+    "Diabetes" = "salmon"
+  )) +
+  labs(
+    title = "Distribution of Mentally Unhealthy Days by Diabetes Status",
+    x = "Mental Health (Last 30 Days)",
+    y = "Count",
+    fill = "Diabetes Status"
+  ) +
+  theme_minimal()
+
+```
+
+```{r}
+mental_table =
+  diabetes |> 
+  count(mental, diabetes_binary) |> 
+  group_by(mental) |> 
+  mutate(
+    prop = round(n / sum(n) * 100, 1)
+  ) |> 
+  select(Mental = mental, Diabetes_Status = diabetes_binary, Count = n, Proportion = prop) 
+
+knitr::kable(mental_table)
+```
+
+The counts of mentally unhealthy days are higher among non-diabetes due to the large sample size. However, by looking at the proportion of diabetes for each categories of mental health, the proportion of individuals reporting frequent mental distress (23.7%) is higher among those with diabetes.   
+
+### Physical Health
+
+```{r}
+diabetes |> 
+  ggplot(aes(x = phys_hlth)) +
+  geom_histogram()
+```
+
+Like the mental health measure, the physical health variable is heavily skewed towards 0 days. Based on CDC guideline, individuals experiencing 14 or more physically unhealthy days in the past 30 days are defined as having frequent physical distress. We categorized the `phys_hlth` variable into 3 levels : 0 days, 1-13 days, and 14+ days. 
+
+```{r}
+diabetes = 
+  diabetes |> 
+  mutate(
+    physical = case_when(
+      phys_hlth == 0 ~ "0 days",
+      phys_hlth >= 1 & phys_hlth <= 13 ~ "1-13 days",
+      phys_hlth >= 14 ~ "14+ days"
+    ),
+    mental = factor(mental, levels = c("0 days", "1-13 days", "14+ days"))
+  )
+```
+
+
+```{r}
+diabetes |> 
+  ggplot(aes(x = physical, fill = diabetes_binary)) +
+  geom_bar(position = "dodge") +
+  scale_fill_manual(values = c(
+    "No Diabetes" = "lightgreen",
+    "Diabetes" = "salmon"
+  )) +
+  labs(
+    title = "Distribution of Mentally Unhealthy Days by Diabetes Status",
+    x = "physical Health (Last 30 Days)",
+    y = "Count",
+    fill = "Diabetes Status"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+physical_table =
+  diabetes |> 
+  count(physical, diabetes_binary) |> 
+  group_by(physical) |> 
+  mutate(
+    prop = round(n / sum(n) * 100, 1)
+  ) |> 
+  select(Physical = physical, Diabetes_Status = diabetes_binary, Count = n, Proportion = prop) 
+
+knitr::kable(physical_table)
+```
+
+Individuals with diabetes show a higher count in both the 1–13 days and 14+ days categories than would be expected relative to the non-diabetic group, with 17.4% and 30.6%, respectively.
+
+
+## <b>Lifestyle Conditions</b>
+
+The next category is lifestyle which include smoking, physical activity, fruits and vegetables intake, and heavy alcohol consumption. 
+```{r}
+behavior_vars = c("smoker", "phys_activity", "fruits", "veggies", "hvy_alcohol_consump")
+
+behavior_long =
+  diabetes |> 
+  pivot_longer(
+    cols = all_of(behavior_vars),
+    names_to = "variable",
+    values_to = "response"
+  )
+
+behavior_title_map = c(
+  smoker = "Smoking Status",
+  phys_activity = "Physical Activity",
+  fruits = "Fruit Consumption",
+  veggies = "Vegetable Consumption",
+  hvy_alcohol_consump = "Heavy Alcohol Consumption"
+)
+
+p_behavior =
+  ggplot(behavior_long, aes(x = diabetes_binary, fill = response)) +
+  geom_bar(position = "fill", width = 0.7) +
+  facet_wrap(
+    ~ variable, 
+    ncol = 2,
+    labeller = labeller(variable = behavior_title_map)
+  ) +
+  labs(
+    title = "Lifestyle Factor by Diabetes Status",
+    x = "Diabetes Status",
+    y = "Proportion"
+  ) +
+  theme_minimal()
+
+# make interactive
+ggplotly(p_behavior)
+```
+The proportions show minimal differences between individuals with and without diabetes across these variables. This suggests that lifestyle condition variables have little influence on the likelihood of having diabetes. However, for the physical activity variable, we anticipated it to contribute to diabetes because difficulty walking increases the risk of having diabetes. It would imply that physical activity influences diabetes proportion. However, the survey question asks have you exercised in the past 30 days. Thus, even if you worked out 1 day, it would still count as yes. Therefore, it does not contribute as a risk factor due to the way the question was asked.
+
+
+## <b>Healthcare Access and Function</b>
+Lastly, the variables in healthcare access and function category include cholesterol check, health care coverage, health care affordability and difficulty walking.
+
+```{r}
+access_vars = c("chol_check", "any_healthcare", "no_docbc_cost", "diff_walk")
+
+diabetes_long =
+  diabetes |> 
+  pivot_longer(cols = all_of(access_vars),
+               names_to = "variable",
+               values_to = "response")
+
+title_map = c(
+  chol_check = "Cholesterol check",
+  any_healthcare = "Health Care Coverage",
+  no_docbc_cost = "Unable to See Doctor (Cost)", 
+  diff_walk = "Difficulty Walking"
+)
+
+col_names = names(title_map)
+
+
+p_access =
+  ggplot(diabetes_long, aes(x = diabetes_binary, fill = response)) +
+  geom_bar(position = "fill", width = 0.7) +
+  facet_wrap(
+    ~ variable,
+    ncol = 2,
+    labeller = labeller(variable = title_map)
+  ) +
+  labs(
+    title = "Healthcare Access by Diabetes Status",
+    x = "Diabetes Status",
+    y = "Proportion"
+  ) +
+  theme_minimal()
+
+# make it interactive
+ggplotly(p_access)
+```
+
+When comparing the proportions across variables, only difficulty walking demonstrates a notable difference between individuals with and without diabetes. This indicates that difficulty walking is the only variable that shows a strong association with diabetes status. It’s likely that difficulty walking has an indirect relationship with diabetes where inability of having regular physical activity could lead to high cholesterol level, high blood pressure and more clinical conditions. As a result, increase the risk of developing diabetes. 
+
+
+
+# 4. Characteristics analysis
 To evaluate whether key variables differ significantly between diabetes and non-diabetes groups, chi-square tests were conducted for categorical variables and t-tests were performed for continuous variables. In this analysis, the binary diabetes dataset was used, where prediabetes and diabetes were combined into a single diabetes group. Among the 21 variables in the dataset, 17 are categorical and 4 are continuous. A chi-square test for categorical variables assesses whether the distribution of a characteristic differs significantly between groups, whereas a t-test for continuous variables compares group means to determine whether differences in average values are statistically significant.
 
 ```{r, warning=FALSE, message=FALSE}
@@ -260,13 +540,9 @@ ggplot(df_cont,aes(x = factor(Diabetes_binary,
 
 Similarly, the **t-test results** show that all continuous variables have extremely small p-values, indicating significant mean differences between individuals with and without diabetes. Specifically, participants in the diabetes group have higher BMI, report more days of poor physical and mental health, and assign worse general health ratings compared with non-diabetic individuals. These substantial mean differences, together with large t-statistics and narrow confidence intervals, provide strong evidence that these continuous health measures are associated with diabetes status.
 
-### Discussion: 
- 
-In general, all characteristics show significant differences between individuals with and without diabetes. This aligns with expectations, as many health and demographic factors, such as blood pressure, cholesterol, physical activity, age, and income, are known to be associated with diabetes risk. One thing that we didn’t expect is that many p-values are extremely small, indicating exceptionally strong group differences. This suggests that the predictors in this dataset have very strong associations with diabetes status, much stronger than what might typically be observed in population-level studies. Overall, these results highlight clear disparities in health behaviors, health status, and demographic characteristics between diabetic and non-diabetic individuals, providing insight into the underlying factors that may contribute to diabetes risk.
 
 
-
-## Prediction Models
+# 5. Prediction Models
 
 This analysis evaluated multiple machine learning and statistical models to predict diabetes using a large population health survey dataset containing demographic, lifestyle, and cardiometabolic variables. Two modeling frameworks were examined:
 
@@ -283,11 +559,11 @@ Model performance differed substantially across approaches, with binary models c
 
 ---
 
-# 1. Multinomial Logistic Regression (Three-Class Model)
+## Multinomial Logistic Regression (Three-Class Model)
 
 A multinomial logistic regression model was used to classify individuals into *No Diabetes*, *Prediabetes*, and *Diabetes*.
 
-## 1.1 Model Performance
+### 1. Model Performance
 
 The model performed poorly, especially for the prediabetes category.
 
@@ -303,7 +579,7 @@ knitr::include_graphics("prediction_images/multi_heatmap.png")
 knitr::include_graphics("prediction_images/multi_roc.png")
 ```
 
-## 1.2 Interpretation
+### 2. Interpretation
 
 - The prediabetes category was frequently misclassified as either No Diabetes or Diabetes.
 - Features in the dataset do not separate cleanly into three clinically distinct groups.
@@ -311,9 +587,9 @@ knitr::include_graphics("prediction_images/multi_roc.png")
 
 ---
 
-# 2. Why Binary Models Outperform Multinomial Models
+## Why Binary Models Outperform Multinomial Models
 
-## 2.1 Prediabetes Is Not a Statistically Distinct Class
+### 1) Prediabetes Is Not a Statistically Distinct Class
 
 Prediabetes shares clinical markers with both normal and diabetic groups.  
 Thus:
@@ -322,7 +598,7 @@ Thus:
 - No clear decision boundary  
 - Classification becomes unstable  
 
-## 2.2 Severe Class Imbalance
+### 2) Severe Class Imbalance
 
 “No Diabetes” represents the majority of the dataset.  
 Multinomial models:
@@ -333,7 +609,7 @@ Multinomial models:
 
 Binary classification substantially reduces imbalance issues.
 
-## 2.3 Simplified Decision Boundary
+### 3) Simplified Decision Boundary
 
 Binary classification requires distinguishing:
 
@@ -341,7 +617,7 @@ Binary classification requires distinguishing:
 
 This simplifies the task, increases stability, and improves performance.
 
-## 2.4 Tree-Based Models Excel in Binary Settings
+### 4) Tree-Based Models Excel in Binary Settings
 
 Random Forest and XGBoost:
 
@@ -351,16 +627,15 @@ Random Forest and XGBoost:
 
 These strengths are more effective when predicting two classes instead of three.
 
-**Conclusion:**  
 The prediabetes class is not well-defined in the dataset, making multinomial models unstable and inaccurate. Binary modeling produces more practical and reliable results.
 
 ---
 
-# 3. Binary Logistic Regression
+## Binary Logistic Regression
 
 A binary logistic regression model was fitted using cardiometabolic and lifestyle predictors.
 
-## 3.1 Significant Predictors
+### 1) Significant Predictors
 
 - High blood pressure (OR = 2.54, 95% CI: 2.48–2.61)  
 - High cholesterol (OR = 1.97, 95% CI: 1.92–2.02)  
@@ -370,7 +645,7 @@ A binary logistic regression model was fitted using cardiometabolic and lifestyl
 - Male sex (OR = 1.15)
 - Polynomial age terms: significant nonlinear age–risk relationship
 
-## 3.2 Model Performance
+### 2) Model Performance
 
 - **True negatives:** 210,761  
 - **False positives:** 2,942  
@@ -382,7 +657,7 @@ A binary logistic regression model was fitted using cardiometabolic and lifestyl
 knitr::include_graphics("prediction_images/binary_log_roc.png")
 ```
 
-## 3.3 Interpretation
+### 3) Interpretation
 
 - High specificity but poor sensitivity  
 - Misses many diabetes cases  
@@ -390,18 +665,18 @@ knitr::include_graphics("prediction_images/binary_log_roc.png")
 
 ---
 
-# 4. Binary Random Forest (Ranger)
+## Binary Random Forest (Ranger)
 
 A random forest classifier was applied to the binary diabetes outcome.
 
-## 4.1 Confusion Matrix
+### 1) Confusion Matrix
 
 - **True positives:** 6,513  
 - **False negatives:** 1,482  
 - **True negatives:** 41,759  
 - **False positives:** 981  
 
-## 4.2 Performance Metrics
+### 2) Performance Metrics
 
 - **Accuracy:** 0.8523  
 - **Macro F1:** 0.9177  
@@ -412,7 +687,7 @@ knitr::include_graphics("prediction_images/randomF_heatmap.png")
 knitr::include_graphics("prediction_images/randomF_roc.png")
 ```
 
-## 4.3 Interpretation
+### 3) Interpretation
 
 - Strong balanced performance  
 - Handles nonlinear relationships well  
@@ -424,11 +699,11 @@ knitr::include_graphics("prediction_images/var_importance_randomF.png")
 ```
 ---
 
-# 5. XGBoost Model
+## XGBoost Model
 
 An XGBoost classifier was trained with depth-4 trees, learning rate 0.1, and subsampling.
 
-## 5.1 Performance
+### 1) Performance
 
 - **Accuracy:** 1.00  
 - **Sensitivity:** 1.00  
@@ -439,7 +714,7 @@ An XGBoost classifier was trained with depth-4 trees, learning rate 0.1, and sub
 knitr::include_graphics("prediction_images/xgb_importance.png")
 ```
 
-## 5.2 Interpretation
+### 2) Interpretation
 
 XGBoost achieved perfect discrimination on the test dataset.
 
@@ -449,7 +724,7 @@ XGBoost achieved perfect discrimination on the test dataset.
 
 ---
 
-# 6. Comparison of Binary Models
+## Comparison of Binary Models
 
 | Model | Accuracy | Macro F1 | AUC | Strengths | Weaknesses |
 |------|----------|----------|-----|-----------|------------|
@@ -458,8 +733,6 @@ XGBoost achieved perfect discrimination on the test dataset.
 | **XGBoost** | 1.00 | 1.00 | 1.00 | Outstanding predictive ability | Possible overfitting |
 
 ---
-
-# 7. Overall Conclusion
 
 The multinomial logistic regression model performed poorly due to overlapping class distributions, substantial class imbalance, and the inherent difficulty of distinguishing prediabetes. Its macro F1 score of ~0.395 and low prediabetes recall demonstrate that it is not suitable for multi-class diabetes prediction in this dataset.
 
@@ -473,7 +746,13 @@ Binary models performed substantially better:
 
 ---
 
-# 8. Discussion
+# 6. Discussion
+
+
+## Discussion(annie): 
+ 
+In general, all characteristics show significant differences between individuals with and without diabetes. This aligns with expectations, as many health and demographic factors, such as blood pressure, cholesterol, physical activity, age, and income, are known to be associated with diabetes risk. One thing that we didn’t expect is that many p-values are extremely small, indicating exceptionally strong group differences. This suggests that the predictors in this dataset have very strong associations with diabetes status, much stronger than what might typically be observed in population-level studies. Overall, these results highlight clear disparities in health behaviors, health status, and demographic characteristics between diabetic and non-diabetic individuals, providing insight into the underlying factors that may contribute to diabetes risk.
+
 
 The results highlight the trade-offs between **interpretability** and **predictive performance**:
 
