@@ -269,6 +269,9 @@ $(document).ready(function () {
   <a href="logistic_regression_xgboost.html">Analysis</a>
 </li>
 <li>
+  <a href="chi_test.html">characteristics</a>
+</li>
+<li>
   <a href="discussion.html">Discussion</a>
 </li>
 <li>
@@ -481,8 +484,8 @@ y_test &lt;- test_data$diabetes_2</code></pre>
   verbose = TRUE,
   probability = TRUE
 )</code></pre>
-<pre><code>## Growing trees.. Progress: 43%. Estimated remaining time: 40 seconds.
-## Growing trees.. Progress: 89%. Estimated remaining time: 7 seconds.</code></pre>
+<pre><code>## Growing trees.. Progress: 46%. Estimated remaining time: 35 seconds.
+## Growing trees.. Progress: 92%. Estimated remaining time: 5 seconds.</code></pre>
 <p>Prediction and Metrics</p>
 <pre class="r"><code>pred &lt;- predict(rf_model, data = test_data, type = &quot;response&quot;)
 

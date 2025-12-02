@@ -13,7 +13,7 @@
 
 <title>Characteristics between diabetic and non-diabetic groups</title>
 
-<script src="site_libs/header-attrs-2.30/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -263,13 +263,16 @@ $(document).ready(function () {
   <a href="EDA.html">EDA</a>
 </li>
 <li>
-  <a href="analysis.html">Analysis</a>
+  <a href="prediction.html">Prediction</a>
+</li>
+<li>
+  <a href="logistic_regression_xgboost.html">Analysis</a>
+</li>
+<li>
+  <a href="chi_test.html">characteristics</a>
 </li>
 <li>
   <a href="discussion.html">Discussion</a>
-</li>
-<li>
-  <a href="prediction.html">Prediction</a>
 </li>
 <li>
   <a href="mailto:&lt;vy2196@cumc.columbia.edu&gt;">
@@ -301,7 +304,7 @@ non-diabetic groups</h1>
 <div id="chi-square-test-for-categorical-variables"
 class="section level1">
 <h1>Chi-square test for categorical variables</h1>
-<pre class="r"><code>chi_diabetes = read.csv(&quot;~/p8105_finalproject/Diabete datasets/diabetes_binary_health_indicators_BRFSS2015.csv&quot;)
+<pre class="r"><code>chi_diabetes = read.csv(&quot;Diabete datasets/diabetes_binary_health_indicators_BRFSS2015.csv&quot;)
 
 cat_vars &lt;- c(
   &quot;HighBP&quot;, &quot;HighChol&quot;, &quot;Smoker&quot;, &quot;Stroke&quot;, &quot;HeartDiseaseorAttack&quot;,
