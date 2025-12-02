@@ -219,7 +219,7 @@ Individuals with diabetes (median = 31.8) have noticeably higher BMI values comp
 
 ## <b>Clinical Conditions</b>
 
-Clinical conditions include high blood pressure, high cholesterol, history of stroke, and a history of heart disease or heart attack. The chart below shows the proportions of participants who reported each condition and whether they also have diabetes. 
+Clinical conditions include high blood pressure, high cholesterol, history of stroke, a history of heart disease or heart attack, mental health and physical health. The chart below shows the proportions of participants who reported each condition and whether they also have diabetes. 
 
 ```{r}
 clinical_vars = c("high_bp", "high_chol", "stroke", "heart_diseaseor_attack")
@@ -260,7 +260,7 @@ ggplotly(p)
 ```
 The proportions show that there is a strong relationship between each clinical condition and diabetes status. For individuals who reported having a specific condition, the proportion with diabetes is significantly higher than the proportion without diabetes. Among these conditions, high blood pressure is associated with the highest proportion of diabetes, at approximately 0.738. Conversely, a history of stroke is linked to the lowest observed proportion, at about 0.088.
 
-* Mental Health 
+#### * Mental Health 
 
 The mean of the number of days in the past month during which an individual reported poor mental health is `r round(mean(diabetes$ment_hlth),3)`.
 
